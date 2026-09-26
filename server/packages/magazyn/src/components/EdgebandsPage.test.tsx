@@ -91,4 +91,16 @@ describe("EdgebandsPage", () => {
     await user.click(within(table).getByRole("button", { name: "Cena" }));
     expect(within(table).getAllByText(/zł$/).map((cell) => cell.textContent)).toEqual(["0,90 zł", "1,67 zł", "3,50 zł"]);
   });
+
+  it("filters the table from the producer checkbox and shows the remaining count", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    expect(await screen.findByRole("cell", { name: "2464L" })).toBeInTheDocument();
+    await user.click(screen.getByRole("checkbox", { name: /Egger/ }));
+    expect(screen.queryByRole("cell", { name: "2464L" })).not.toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "U702" })).toBeInTheDocument();
+    expect(screen.getByText("2 z 3")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Wyczyść filtry" }));
+    expect(screen.getByRole("cell", { name: "2464L" })).toBeInTheDocument();
+  });
 });

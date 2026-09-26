@@ -1,7 +1,10 @@
+import FilterListIcon from "@mui/icons-material/FilterList";
 import Alert from "@mui/material/Alert";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
+import Drawer from "@mui/material/Drawer";
+import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -14,6 +17,8 @@ import TableSortLabel from "@mui/material/TableSortLabel";
 import TextField from "@mui/material/TextField";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -23,13 +28,17 @@ import {
   edgebandUpdated,
   isCatalogEdgeband,
   millimetres,
+  normalizeCatalogEdgeband,
   pageOf,
   readEdgebandView,
+  toggleEdgebandFilter,
   writeEdgebandView,
   type CatalogEdgeband,
   type EdgebandSort,
   type EdgebandView,
 } from "../edgebands";
+import { drawerWidth } from "../theme";
+import { EdgebandFilters } from "./EdgebandFilters";
 import { WarehouseNav } from "./WarehouseNav";
 
 const COLUMNS: { key: EdgebandSort; label: string }[] = [
@@ -44,6 +53,9 @@ const COLUMNS: { key: EdgebandSort; label: string }[] = [
 ];
 
 export function EdgebandsPage() {
+  const theme = useTheme();
+  const mobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [params, setParams] = useSearchParams();
   const view = readEdgebandView(params);
   const [rows, setRows] = useState<CatalogEdgeband[]>([]);
@@ -78,9 +90,14 @@ export function EdgebandsPage() {
   }
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
-      <AppBar position="fixed">
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
+      <AppBar position="fixed" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
         <Toolbar>
+          {mobile ? (
+            <IconButton color="inherit" edge="start" aria-label="Filtry" onClick={() => setFiltersOpen(true)} sx={{ mr: 1 }}>
+              <FilterListIcon />
+            </IconButton>
+          ) : null}
           <Typography variant="h6" component="h1" sx={{ flexGrow: 1 }}>
             Magazyn
           </Typography>
@@ -90,7 +107,26 @@ export function EdgebandsPage() {
           </Typography>
         </Toolbar>
       </AppBar>
-      <Box component="main" sx={{ p: { xs: 2, md: 3 } }}>
+      <Drawer
+        variant={mobile ? "temporary" : "permanent"}
+        open={mobile ? filtersOpen : true}
+        onClose={() => setFiltersOpen(false)}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box", borderColor: "divider", bgcolor: "background.paper" },
+        }}
+      >
+        <Toolbar />
+        <EdgebandFilters
+          rows={rows}
+          view={view}
+          onToggle={(name, value) => commit({ ...view, filters: toggleEdgebandFilter(view.filters, name, value), page: 0 })}
+          onClear={() => commit({ ...view, filters: {}, page: 0 })}
+        />
+      </Drawer>
+      <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, md: 3 }, width: { md: `calc(100% - ${drawerWidth}px)` } }}>
         <Toolbar />
         <Typography color="text.secondary" sx={{ mb: 2 }}>
           Obrzeża z katalogu meble.pl.
@@ -178,6 +214,8 @@ async function loadEdgebands(): Promise<CatalogEdgeband[]> {
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) throw new Error("Edgeband response was not JSON");
   const body: unknown = await response.json();
-  if (!Array.isArray(body) || !body.every(isCatalogEdgeband)) throw new Error("Edgeband JSON is not a list");
-  return body;
+  if (!Array.isArray(body)) throw new Error("Edgeband JSON is not a list");
+  const rows = body.map(normalizeCatalogEdgeband);
+  if (!rows.every(isCatalogEdgeband)) throw new Error("Edgeband JSON is not a list");
+  return rows;
 }
