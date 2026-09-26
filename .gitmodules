@@ -1,0 +1,3 @@
+[submodule "sketchup_chat_bridge"]
+	path = sketchup_chat_bridge
+	url = https://github.com/kiermasp/sketchup-chat-bridge.git
