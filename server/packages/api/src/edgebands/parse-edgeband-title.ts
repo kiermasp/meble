@@ -22,16 +22,16 @@ const EMPTY: ParsedEdgebandTitle = {
  * Shop titles put the tape width first and the thickness second: "23 x 0.8 mm".
  * A product page for that shape lists Grubość as 0,8 mm and Format as 0,8x23 mm.
  */
+const DIMENSIONS_AT_END = /(\d+(?:[.,]\d+)?)\s*x\s*(\d+(?:[.,]\d+)?)(?:\s*mm)?\s*$/i;
+const SHORT_SUFFIX = /\s+\([A-Za-z]\)\s*$/;
+
 export function parseEdgebandTitle(displayName: string, manufacturer: string | null): ParsedEdgebandTitle {
-  let rest = displayName.trim().replace(/^Obrzeże\s+/i, "");
+  let rest = displayName.trim().replace(/^Obrze[żz]e\s+/i, "");
   rest = rest.replace(/^meblowe\s+/i, "");
   rest = rest.replace(/^do\s+oklejania\s+laserowego\s+/i, "");
-  rest = stripTrailingManufacturer(rest, manufacturer);
-  if (!/\d+(?:[.,]\d+)?\s*x\s*\d+(?:[.,]\d+)?\s*mm\s*$/i.test(rest)) {
-    rest = rest.replace(/\s+\S+$/, "");
-  }
+  rest = stripShopTail(rest, manufacturer);
 
-  const dims = rest.match(/^(.*)\s+(\d+(?:[.,]\d+)?)\s*x\s*(\d+(?:[.,]\d+)?)\s*mm\s*$/i);
+  const dims = rest.match(new RegExp(`^(.*)\\s+${DIMENSIONS_AT_END.source}`, "i"));
   if (!dims?.[1] || !dims[2] || !dims[3]) return EMPTY;
 
   let middle = dims[1].trim().replace(/^(?:ABS|PVC|PCV|PP|PMMA|PRO|AKRYL)\s+/i, "");
@@ -59,6 +59,18 @@ export function parseEdgebandTitle(displayName: string, manufacturer: string | n
     widthMm,
     thicknessMm,
   };
+}
+
+function stripShopTail(value: string, manufacturer: string | null): string {
+  const stripped = stripTrailingManufacturer(stripShortSuffix(value), manufacturer);
+  if (DIMENSIONS_AT_END.test(stripped)) return stripped;
+  const withoutToken = stripped.replace(/\s+\S+$/, "").trim();
+  if (withoutToken === stripped) return stripped;
+  return stripTrailingManufacturer(stripShortSuffix(withoutToken), manufacturer);
+}
+
+function stripShortSuffix(value: string): string {
+  return value.replace(SHORT_SUFFIX, "").trim();
 }
 
 function stripTrailingManufacturer(value: string, manufacturer: string | null): string {

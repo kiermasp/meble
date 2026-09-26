@@ -53,6 +53,31 @@ describe("parseEdgebandTitle", () => {
     });
   });
 
+  it("reads dimensions when the manufacturer is followed by a short suffix", () => {
+    expect(
+      parseEdgebandTitle("Obrzeże meblowe ABS H3704 ST15 orzech Aida tabak 23 x 0.8 mm EGGER (N)", "Egger"),
+    ).toEqual({
+      code: "H3704",
+      name: "orzech Aida tabak",
+      structure: "ST15",
+      widthMm: 23,
+      thicknessMm: 0.8,
+    });
+    expect(parseEdgebandTitle("Obrzeże meblowe ABS U628 ST15 Zieleń 42 x 2 EGGER (K)", "Egger")).toMatchObject({
+      code: "U628",
+      name: "Zieleń",
+      structure: "ST15",
+      widthMm: 42,
+      thicknessMm: 2,
+    });
+    expect(parseEdgebandTitle("Obrzeże meblowe ABS 140704 Matt Czerwone 23 x 0.8 mm REHAU (R)", "Rehau")).toMatchObject({
+      code: "140704",
+      name: "Matt Czerwone",
+      widthMm: 23,
+      thicknessMm: 0.8,
+    });
+  });
+
   it("keeps width and thickness on every sampled listing title", () => {
     for (const title of PAGE_TITLES) {
       const parsed = parseEdgebandTitle(title, title.endsWith("REHAU") ? "REHAU" : "Egger");
