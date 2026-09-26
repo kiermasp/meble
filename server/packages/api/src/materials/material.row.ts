@@ -16,6 +16,9 @@ export class MaterialRow {
   category!: string;
 
   @Column({ type: "text", nullable: true })
+  manufacturer!: string | null;
+
+  @Column({ type: "text", nullable: true })
   structure!: string | null;
 
   @Column({

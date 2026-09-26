@@ -6,6 +6,7 @@ export function presentMaterial(material: Material) {
     displayName: material.displayName,
     category: material.category,
     categoryLabel: CATEGORY_LABELS[material.category],
+    manufacturer: material.manufacturer,
     structure: material.structure,
     thicknessMm: material.thicknessMm,
     availability: material.availability,

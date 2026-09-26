@@ -21,6 +21,7 @@ export class MaterialStore {
       externalCode: material.externalCode,
       displayName: material.displayName,
       category: material.category,
+      manufacturer: material.manufacturer,
       structure: material.structure,
       thicknessMm: material.thicknessMm,
       availability: material.availability,

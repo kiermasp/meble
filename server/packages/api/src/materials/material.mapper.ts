@@ -16,6 +16,7 @@ export function toMaterial(row: MaterialRow): Material {
     externalCode: row.externalCode,
     displayName: row.displayName,
     category: row.category,
+    manufacturer: row.manufacturer,
     structure: row.structure,
     thicknessMm: row.thicknessMm,
     availability: row.availability,

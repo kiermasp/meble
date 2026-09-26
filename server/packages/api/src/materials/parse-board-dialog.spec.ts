@@ -17,6 +17,7 @@ describe("parseBoardDialog", () => {
     expect(white).toMatchObject({
       displayName: "W1000 ST19 / Biały premium",
       category: "plyty-meblowe",
+      manufacturer: "Egger",
       structure: "ST19",
       thicknessMm: 18,
       availability: "in_stock",
@@ -27,10 +28,16 @@ describe("parseBoardDialog", () => {
     expect(cleaf).toMatchObject({
       displayName: "B073 CHFI / Total White",
       category: "plyty-tss-cleaf",
+      manufacturer: "Cleaf",
       structure: "CHFI",
       availability: "in_stock",
     });
     expect(cleaf?.thicknessMm).toBeCloseTo(18.4, 5);
+
+    expect(materials.find((material) => material.externalCode === "U1895L STEM")?.manufacturer).toBe("Rehau");
+    expect(materials.find((material) => material.category === "plyty-crystal")?.manufacturer).toBe("Rehau");
+    expect(materials.find((material) => material.category === "plyty-wysoki-polysk")?.manufacturer).toBe("Egger");
+    expect(materials.find((material) => material.category === "plyty-gleboki-mat")?.manufacturer).toBe("Egger");
   });
 
   it("keeps all three availability states", () => {
@@ -77,6 +84,7 @@ describe("parseBoardDialog", () => {
           externalCode: "67544",
           category: "hdf",
           displayName: "Płyta HDF 3 mm jednostronnie biała (2070x2800)",
+          manufacturer: null,
           structure: null,
           thicknessMm: 3,
           availability: "in_stock",
@@ -84,6 +92,7 @@ describe("parseBoardDialog", () => {
         expect.objectContaining({
           externalCode: "4745147",
           category: "grip",
+          manufacturer: "Rehau",
           structure: null,
           thicknessMm: 16,
           availability: "in_stock",

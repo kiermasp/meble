@@ -11,6 +11,7 @@ function board(overrides: Partial<Material> = {}): Material {
     externalCode: "W1000 ST19",
     displayName: "W1000 ST19 / Biały premium",
     category: "plyty-meblowe",
+    manufacturer: "Egger",
     structure: "ST19",
     thicknessMm: 18,
     availability: "in_stock",
@@ -54,6 +55,7 @@ describe("MaterialStore upsert", () => {
     await store.upsertAll([
       board({
         displayName: "W1000 ST19 / Biały premium (aktualizacja)",
+        manufacturer: "Egger",
         thicknessMm: 19,
         availability: "on_order",
         fetchedAt: new Date("2026-09-26T13:00:00.000Z"),
@@ -61,6 +63,7 @@ describe("MaterialStore upsert", () => {
       board({
         externalCode: "U708 PGST9",
         displayName: "U708 PGST9 / Szary jasny",
+        manufacturer: "Egger",
         structure: "PGST9",
         category: "plyty-wysoki-polysk",
         availability: "on_order_pallet",
@@ -72,6 +75,7 @@ describe("MaterialStore upsert", () => {
     const updated = rows.find((row) => row.externalCode === "W1000 ST19");
     expect(updated).toMatchObject({
       displayName: "W1000 ST19 / Biały premium (aktualizacja)",
+      manufacturer: "Egger",
       thicknessMm: 19,
       availability: "on_order",
       structure: "ST19",

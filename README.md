@@ -36,7 +36,7 @@ API nasłuchuje na porcie **3010** (w kontenerze 3000). Po starcie proces od raz
 API wystawia wyłącznie JSON (`Content-Type: application/json`):
 
 - `GET /health` — `{ "status": "ok", "materials": <liczba> }`
-- `GET /materials` — lista płyt
+- `GET /materials` — lista płyt, z `manufacturer` (producent: Egger, Rehau, Cleaf; puste dla HDF) i `thicknessMm` (grubość w mm)
 - `GET /materials?category=plyty-meblowe` — jedna kategoria
 
 ```bash

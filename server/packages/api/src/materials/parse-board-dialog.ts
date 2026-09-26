@@ -12,6 +12,30 @@ const ADD_KOLOR_SOURCE =
 
 const THICKNESS_IN_NAME = /(\d+(?:[.,]\d+)?)\s*mm/i;
 
+/**
+ * Producer meble.pl prints for that cutting section.
+ * Furniture, gloss, and mat boards are Egger (nav "Płyty meblowe EGGER", shop titles "Płyta … EGGER").
+ * Acrylic and Crystal are Rehau (nav "REHAU Rauvisio" / "REHAU Crystal").
+ * TSS Cleaf is Cleaf (dialog tab "TSS Cleaf"). Grip names end with REHAU.
+ * HDF product pages leave `brand` empty, so those rows stay null.
+ */
+const CATEGORY_MANUFACTURER: Record<MaterialCategory, string | null> = {
+  "plyty-meblowe": "Egger",
+  "plyty-akrylowe": "Rehau",
+  "plyty-wysoki-polysk": "Egger",
+  "plyty-gleboki-mat": "Egger",
+  "plyty-crystal": "Rehau",
+  "plyty-tss-cleaf": "Cleaf",
+  hdf: null,
+  grip: "Rehau",
+};
+
+const PRODUCER_IN_NAME: Record<string, string> = {
+  EGGER: "Egger",
+  REHAU: "Rehau",
+  CLEAF: "Cleaf",
+};
+
 export function parseBoardDialog(html: string, fetchedAt: Date): Material[] {
   const $ = load(html);
   const materials: Material[] = [];
@@ -34,10 +58,12 @@ function parseDecorTiles(sectionHtml: string, category: MaterialCategory, fetche
     const externalCode = collapse(match[2] ?? "");
     const colorName = collapse(match[3] ?? "");
     if (!externalCode) continue;
+    const displayName = `${externalCode} / ${colorName}`;
     materials.push({
       externalCode,
-      displayName: `${externalCode} / ${colorName}`,
+      displayName,
       category,
+      manufacturer: manufacturerFor(category, displayName),
       structure: structureFromCode(externalCode),
       thicknessMm: parseThickness(match[5]),
       availability: availabilityFromToken(match[4] ?? ""),
@@ -65,6 +91,7 @@ function parseProductTiles(
       externalCode,
       displayName,
       category,
+      manufacturer: manufacturerFor(category, displayName),
       structure: null,
       thicknessMm: thicknessFromName(displayName),
       availability: availabilityFromToken(image),
@@ -72,6 +99,14 @@ function parseProductTiles(
     });
   });
   return materials;
+}
+
+function manufacturerFor(category: MaterialCategory, displayName: string): string | null {
+  const named = displayName.match(/\b(EGGER|REHAU|CLEAF)\b/i);
+  if (named?.[1]) {
+    return PRODUCER_IN_NAME[named[1].toUpperCase()] ?? null;
+  }
+  return CATEGORY_MANUFACTURER[category];
 }
 
 function availabilityFromToken(token: string): AvailabilityStatus {

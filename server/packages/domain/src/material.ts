@@ -49,6 +49,8 @@ export interface Material {
   externalCode: string;
   displayName: string;
   category: MaterialCategory;
+  /** Producer name printed by meble.pl. Null when that product page leaves the brand empty. */
+  manufacturer: string | null;
   structure: string | null;
   thicknessMm: number | null;
   availability: AvailabilityStatus;
