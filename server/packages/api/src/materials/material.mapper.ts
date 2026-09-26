@@ -7,6 +7,7 @@ export interface StoredMaterial extends Material {
   categoryLabel: string;
   manufacturerId: string | null;
   decorKindId: string | null;
+  updatedAt: Date;
 }
 
 export function toMaterial(row: MaterialRow): StoredMaterial {
@@ -40,5 +41,6 @@ export function toMaterial(row: MaterialRow): StoredMaterial {
     color: row.color?.name ?? null,
     statuses: statuses.map((status) => status.name),
     fetchedAt: new Date(row.fetchedAt),
+    updatedAt: new Date(row.updatedAt),
   };
 }

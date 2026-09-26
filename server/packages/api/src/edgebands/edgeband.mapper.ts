@@ -1,7 +1,12 @@
 import type { Edgeband } from "@meble/domain";
 import { EdgebandRow } from "./edgeband.row";
 
-export function toEdgeband(row: EdgebandRow): Edgeband & { id: string } {
+export interface StoredEdgeband extends Edgeband {
+  id: string;
+  updatedAt: Date;
+}
+
+export function toEdgeband(row: EdgebandRow): StoredEdgeband {
   return {
     id: row.id,
     mebleRefId: row.mebleRefId,
@@ -16,5 +21,6 @@ export function toEdgeband(row: EdgebandRow): Edgeband & { id: string } {
     unitPriceAmount: row.unitPriceAmount,
     currency: row.currency,
     fetchedAt: new Date(row.fetchedAt),
+    updatedAt: new Date(row.updatedAt),
   };
 }

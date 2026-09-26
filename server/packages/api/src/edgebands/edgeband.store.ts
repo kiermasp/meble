@@ -5,7 +5,8 @@ import { Repository } from "typeorm";
 import { CategoryRow, ManufacturerRow } from "../lookups/lookup.rows";
 import { lookupId, mergeNamedTerms, ShopLookupStore } from "../lookups/shop-lookup.store";
 import type { ListingDictionaries } from "../lookups/shop-term";
-import { toEdgeband } from "./edgeband.mapper";
+import { edgebandContentChanged, nextUpdatedAt } from "../catalog-updated-at";
+import { toEdgeband, type StoredEdgeband } from "./edgeband.mapper";
 import { EdgebandRow } from "./edgeband.row";
 
 @Injectable()
@@ -33,28 +34,34 @@ export class EdgebandStore {
     );
     const byCode = new Map<string, Edgeband>();
     for (const edgeband of edgebands) byCode.set(edgeband.mebleRefId, edgeband);
-    const values = [...byCode.values()].map((edgeband) => ({
-      mebleRefId: edgeband.mebleRefId,
-      displayName: edgeband.displayName,
-      categoryId,
-      code: edgeband.code,
-      name: edgeband.name,
-      manufacturerId: lookupId(manufacturers, edgeband.manufacturer),
-      structure: edgeband.structure,
-      widthMm: edgeband.widthMm,
-      thicknessMm: edgeband.thicknessMm,
-      availability: edgeband.availability,
-      unitPriceAmount: edgeband.unitPriceAmount,
-      currency: edgeband.currency,
-      fetchedAt: edgeband.fetchedAt,
-    }));
+    const existing = await this.edgebands.find({ relations: { manufacturer: true, category: true } });
+    const previousByRef = new Map(existing.map((row) => [row.mebleRefId, toEdgeband(row)]));
+    const values = [...byCode.values()].map((edgeband) => {
+      const previous = previousByRef.get(edgeband.mebleRefId);
+      return {
+        mebleRefId: edgeband.mebleRefId,
+        displayName: edgeband.displayName,
+        categoryId,
+        code: edgeband.code,
+        name: edgeband.name,
+        manufacturerId: lookupId(manufacturers, edgeband.manufacturer),
+        structure: edgeband.structure,
+        widthMm: edgeband.widthMm,
+        thicknessMm: edgeband.thicknessMm,
+        availability: edgeband.availability,
+        unitPriceAmount: edgeband.unitPriceAmount,
+        currency: edgeband.currency,
+        fetchedAt: edgeband.fetchedAt,
+        updatedAt: nextUpdatedAt(previous, edgeband.fetchedAt, previous ? edgebandContentChanged(previous, edgeband) : true),
+      };
+    });
     if (values.length === 0) return;
     await this.edgebands.upsert(values, { conflictPaths: ["mebleRefId"], skipUpdateIfNoValuesChanged: false });
     const codes = [...byCode.keys()];
     await this.edgebands.createQueryBuilder().delete().where("meble_ref_id NOT IN (:...codes)", { codes }).execute();
   }
 
-  async list(): Promise<Array<Edgeband & { id: string }>> {
+  async list(): Promise<StoredEdgeband[]> {
     const rows = await this.edgebands.find({
       relations: { manufacturer: true, category: true },
       order: { code: "ASC", widthMm: "ASC", thicknessMm: "ASC" },

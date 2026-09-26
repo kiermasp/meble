@@ -33,6 +33,7 @@ function board(overrides: Partial<CatalogBoard> = {}): CatalogBoard {
     shade: null,
     color: "Biały klasyczny",
     statuses: [],
+    updatedAt: "2026-09-26T10:00:00.000Z",
     ...overrides,
   };
 }
@@ -114,6 +115,8 @@ describe("App", () => {
     expect(screen.getByText("Kategoria")).toBeInTheDocument();
     expect(screen.getByRole("checkbox", { name: "Nowa linia" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Sortuj dekory" })).toBeInTheDocument();
+    expect(screen.getAllByRole("columnheader", { name: "Aktualizacja" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("cell", { name: "26.09.2026, 12:00" }).length).toBeGreaterThan(0);
 
     const card = screen.getByRole("heading", { name: "Egger W960 Biały klasyczny" }).closest(".MuiCard-root");
     if (!(card instanceof HTMLElement)) throw new Error("missing decor card");

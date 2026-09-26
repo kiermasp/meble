@@ -1,6 +1,6 @@
-import type { Edgeband } from "@meble/domain";
+import type { StoredEdgeband } from "./edgeband.mapper";
 
-export function presentEdgeband(edgeband: Edgeband & { id: string }) {
+export function presentEdgeband(edgeband: StoredEdgeband) {
   return {
     id: edgeband.id,
     mebleRefId: edgeband.mebleRefId,
@@ -15,5 +15,6 @@ export function presentEdgeband(edgeband: Edgeband & { id: string }) {
     unitPriceAmount: edgeband.unitPriceAmount,
     currency: edgeband.currency,
     fetchedAt: edgeband.fetchedAt.toISOString(),
+    updatedAt: edgeband.updatedAt.toISOString(),
   };
 }

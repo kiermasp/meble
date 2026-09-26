@@ -64,5 +64,14 @@ describe("EdgebandStore", () => {
       unitPriceAmount: 1.8,
       availability: "48h",
     });
+    expect(rows[0]?.updatedAt.toISOString()).toBe("2026-09-26T12:00:00.000Z");
+  });
+
+  it("keeps the previous update when the next fetch copies the same edgeband", async () => {
+    await store.replaceAll([tape({ fetchedAt: new Date("2026-09-26T08:00:00.000Z") })]);
+    await store.replaceAll([tape({ fetchedAt: new Date("2026-09-26T18:00:00.000Z") })]);
+    const [row] = await store.list();
+    expect(row?.fetchedAt.toISOString()).toBe("2026-09-26T18:00:00.000Z");
+    expect(row?.updatedAt.toISOString()).toBe("2026-09-26T08:00:00.000Z");
   });
 });

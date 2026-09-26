@@ -122,6 +122,7 @@ describe("MaterialStore upsert", () => {
       category: "plyty-meblowe",
     });
     expect(rows[0]?.fetchedAt.toISOString()).toBe("2026-09-26T13:00:00.000Z");
+    expect(rows[0]?.updatedAt.toISOString()).toBe("2026-09-26T13:00:00.000Z");
     expect(rows[0]?.categoryId).toEqual(expect.any(String));
     expect(rows[0]?.manufacturerId).toEqual(expect.any(String));
     expect(rows[0]?.decorKind).toBe("Magazynowe");
@@ -134,5 +135,15 @@ describe("MaterialStore upsert", () => {
     expect(definitions).toContain("FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT");
     expect(definitions).toContain("FOREIGN KEY (manufacturer_id) REFERENCES manufacturers(id) ON DELETE RESTRICT");
     expect(definitions).toContain("FOREIGN KEY (decor_kind_id) REFERENCES decor_kinds(id) ON DELETE RESTRICT");
+  });
+
+  it("keeps the previous update when the next fetch copies the same board", async () => {
+    await store.replaceCategory("plyty-meblowe", [variant({ fetchedAt: new Date("2026-09-26T10:00:00.000Z") })]);
+    await store.replaceCategory("plyty-meblowe", [
+      variant({ fetchedAt: new Date("2026-09-26T16:00:00.000Z"), unitPriceAmount: 227.45 }),
+    ]);
+    const [row] = await store.list();
+    expect(row?.fetchedAt.toISOString()).toBe("2026-09-26T16:00:00.000Z");
+    expect(row?.updatedAt.toISOString()).toBe("2026-09-26T10:00:00.000Z");
   });
 });

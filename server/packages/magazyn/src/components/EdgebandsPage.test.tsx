@@ -20,6 +20,7 @@ function band(overrides: Partial<CatalogEdgeband> = {}): CatalogEdgeband {
     availability: "24h",
     unitPriceAmount: 1.67,
     currency: "PLN",
+    updatedAt: "2026-09-26T12:00:00.000Z",
     ...overrides,
   };
 }
@@ -78,6 +79,8 @@ describe("EdgebandsPage", () => {
     expect(screen.getByRole("cell", { name: "2464L" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Szerokość" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Grubość" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Aktualizacja" })).toBeInTheDocument();
+    expect(screen.getAllByRole("cell", { name: "26.09.2026, 14:00" }).length).toBeGreaterThan(0);
 
     await user.type(screen.getByRole("textbox", { name: "Szukaj obrzeża" }), "egger");
     expect(screen.queryByRole("cell", { name: "2464L" })).not.toBeInTheDocument();

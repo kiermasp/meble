@@ -23,6 +23,7 @@ export interface CatalogBoard {
   shade: string | null;
   color: string | null;
   statuses: string[];
+  updatedAt: string;
 }
 
 export interface WarehouseFilters {
@@ -41,7 +42,7 @@ export interface WarehouseFilters {
 }
 
 export const GROUP_SORTS = ["name", "manufacturer", "price", "thickness"] as const;
-export const ROW_SORTS = ["thickness", "structure", "availability", "price"] as const;
+export const ROW_SORTS = ["thickness", "structure", "availability", "price", "updated"] as const;
 export type GroupSort = (typeof GROUP_SORTS)[number];
 export type RowSort = (typeof ROW_SORTS)[number];
 export type SortDirection = "asc" | "desc";
@@ -130,7 +131,9 @@ export function isCatalogBoard(value: unknown): value is CatalogBoard {
     nullableString(row.shade) &&
     nullableString(row.color) &&
     Array.isArray(row.statuses) &&
-    row.statuses.every((status) => typeof status === "string")
+    row.statuses.every((status) => typeof status === "string") &&
+    typeof row.updatedAt === "string" &&
+    !Number.isNaN(Date.parse(row.updatedAt))
   );
 }
 
@@ -198,6 +201,19 @@ export function priceLabel(board: CatalogBoard): string {
   return formatMoney(board.unitPriceAmount, board.currency);
 }
 
+export function updatedLabel(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("pl-PL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Warsaw",
+  }).format(date);
+}
+
 export function isOrderVariant(board: CatalogBoard): boolean {
   return (board.decorKind ?? "").toLocaleLowerCase("pl").includes("na zamówienie");
 }
@@ -263,9 +279,15 @@ function compareRowKey(left: CatalogBoard, right: CatalogBoard, sort: CatalogSor
   if (sort.rows === "thickness") return compareNullableNumber(left.thicknessMm, right.thicknessMm, sort.rowDirection);
   if (sort.rows === "structure") return directedString(left.structure ?? "", right.structure ?? "", sort.rowDirection);
   if (sort.rows === "price") return compareNullableNumber(left.unitPriceAmount, right.unitPriceAmount, sort.rowDirection);
+  if (sort.rows === "updated") return compareNullableNumber(timestamp(left.updatedAt), timestamp(right.updatedAt), sort.rowDirection);
   const byRank = compareNullableNumber(availabilityRank(left.availability), availabilityRank(right.availability), sort.rowDirection);
   if (byRank !== 0) return byRank;
   return directedString(left.availability ?? "", right.availability ?? "", sort.rowDirection);
+}
+
+function timestamp(iso: string): number | null {
+  const value = Date.parse(iso);
+  return Number.isNaN(value) ? null : value;
 }
 
 function availabilityRank(value: string | null): number | null {

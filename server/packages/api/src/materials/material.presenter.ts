@@ -28,5 +28,6 @@ export function presentMaterial(material: StoredMaterial) {
     color: material.color,
     statuses: material.statuses,
     fetchedAt: material.fetchedAt.toISOString(),
+    updatedAt: material.updatedAt.toISOString(),
   };
 }

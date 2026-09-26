@@ -37,9 +37,9 @@ API nasłuchuje na porcie **3010** (w kontenerze 3000). Magazyn nasłuchuje na p
 API wystawia wyłącznie JSON (`Content-Type: application/json`):
 
 - `GET /health` — `{ "status": "ok", "materials": <liczba> }`
-- `GET /materials` — warianty płyt: `mebleRefId` (id produktu ze sklepu, `data-id`), `categoryId`, `manufacturerId`, `decorKindId`, `structure`, `thicknessMm`, `format`, `availability`, `unitPriceAmount`, `currency`
+- `GET /materials` — warianty płyt: `mebleRefId` (id produktu ze sklepu, `data-id`), `categoryId`, `manufacturerId`, `decorKindId`, `structure`, `thicknessMm`, `format`, `availability`, `unitPriceAmount`, `currency`, `updatedAt` (ostatnia zmiana danych, ISO-8601)
 - `GET /materials?category=plyty-meblowe` — jedna kategoria, po angielskim kodzie z tabeli `categories`
-- `GET /edgebands` — warianty obrzeży: `mebleRefId` (id produktu ze sklepu), `code` (kod dekoru, nie id sklepu), `name`, `manufacturer`, `widthMm`, `thicknessMm`, `availability`, `unitPriceAmount`, `currency`
+- `GET /edgebands` — warianty obrzeży: `mebleRefId` (id produktu ze sklepu), `code` (kod dekoru, nie id sklepu), `name`, `manufacturer`, `widthMm`, `thicknessMm`, `availability`, `unitPriceAmount`, `currency`, `updatedAt` (ostatnia zmiana danych, ISO-8601)
 - `GET /categories`, `GET /manufacturers`, `GET /decor-kinds` — słowniki: `id`, `code`, `name` (po polsku), `sortOrder`, `mebleRefId` (id cechy lub kategorii ze sklepu)
 
 Słowniki sklepu (kategoria, producent, rodzaj dekoru, wodoodporność, typ dekoru, odcień, kolor, jasność, status kolekcji) są tabelami z kluczem obcym z `materials`. `meble_ref_id` na płycie i obrzeżu to id produktu (`data-id`). Na słowniku to id wartości filtra (`filtr_cechy` / `filtr_statusy`) albo `id_kategorii`.

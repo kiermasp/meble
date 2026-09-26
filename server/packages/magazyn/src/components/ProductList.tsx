@@ -13,6 +13,7 @@ import Typography from "@mui/material/Typography";
 import {
   priceLabel,
   thicknessLabel,
+  updatedLabel,
   type CatalogBoard,
   type CatalogSort,
   type RowSort,
@@ -24,6 +25,7 @@ const COLUMNS: Array<{ key: RowSort; label: string; align?: "right" }> = [
   { key: "structure", label: "Struktura" },
   { key: "availability", label: "Dostępność" },
   { key: "price", label: "Cena/szt.", align: "right" },
+  { key: "updated", label: "Aktualizacja" },
 ];
 
 export function ProductList(props: {
@@ -91,6 +93,7 @@ function VariantTable(props: {
               {board.availability ? <Chip size="small" variant="outlined" color={leadColor(board.availability)} label={board.availability} /> : "—"}
             </TableCell>
             <TableCell align="right">{priceLabel(board)}</TableCell>
+            <TableCell>{updatedLabel(board.updatedAt)}</TableCell>
           </TableRow>
         ))}
       </TableBody>

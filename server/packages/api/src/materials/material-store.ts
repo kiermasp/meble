@@ -15,6 +15,7 @@ import {
 } from "../lookups/lookup.rows";
 import { lookupId, mergeNamedTerms, ShopLookupStore } from "../lookups/shop-lookup.store";
 import type { ListingDictionaries, LookupIndex, ShopTerm } from "../lookups/shop-term";
+import { materialContentChanged, nextUpdatedAt } from "../catalog-updated-at";
 import { toMaterial, type StoredMaterial } from "./material.mapper";
 import { MaterialCollectionStatusRow, MaterialRow } from "./material.row";
 
@@ -122,9 +123,12 @@ export class MaterialStore {
   private async saveMaterials(materials: Material[], indexes: PreparedLookups): Promise<void> {
     const byKey = new Map<string, Material>();
     for (const material of materials) byKey.set(`${material.category}\0${material.mebleRefId}`, material);
+    const existing = await this.materials.find({ relations: MATERIAL_RELATIONS });
+    const previousByKey = new Map(existing.map((row) => [`${row.category.code}\0${row.mebleRefId}`, toMaterial(row)]));
     const values = [...byKey.values()].map((material) => {
       const categoryId = indexes.categories.byCode.get(material.category);
       if (!categoryId) throw new Error(`Missing category ${material.category}`);
+      const previous = previousByKey.get(`${material.category}\0${material.mebleRefId}`);
       return {
         mebleRefId: material.mebleRefId,
         displayName: material.displayName,
@@ -146,6 +150,7 @@ export class MaterialStore {
         shadeId: lookupId(indexes.shades, material.shade),
         colorId: lookupId(indexes.colors, material.color),
         fetchedAt: material.fetchedAt,
+        updatedAt: nextUpdatedAt(previous, material.fetchedAt, previous ? materialContentChanged(previous, material) : true),
       };
     });
     if (values.length === 0) return;

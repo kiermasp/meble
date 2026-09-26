@@ -85,4 +85,7 @@ export class EdgebandRow {
 
   @Column({ name: "fetched_at", type: "timestamptz" })
   fetchedAt!: Date;
+
+  @Column({ name: "updated_at", type: "timestamptz", default: () => "CURRENT_TIMESTAMP" })
+  updatedAt!: Date;
 }

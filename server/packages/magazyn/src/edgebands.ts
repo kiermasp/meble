@@ -1,4 +1,4 @@
-import { formatMoney, thicknessLabel } from "./catalog";
+import { formatMoney, thicknessLabel, updatedLabel } from "./catalog";
 
 export interface CatalogEdgeband {
   mebleRefId: string;
@@ -12,9 +12,10 @@ export interface CatalogEdgeband {
   availability: string | null;
   unitPriceAmount: number | null;
   currency: string | null;
+  updatedAt: string;
 }
 
-export const EDGEBAND_SORTS = ["code", "name", "manufacturer", "width", "thickness", "availability", "price"] as const;
+export const EDGEBAND_SORTS = ["code", "name", "manufacturer", "width", "thickness", "availability", "price", "updated"] as const;
 export type EdgebandSort = (typeof EDGEBAND_SORTS)[number];
 export type SortDirection = "asc" | "desc";
 
@@ -48,7 +49,9 @@ export function isCatalogEdgeband(value: unknown): value is CatalogEdgeband {
     nullableNumber(row.thicknessMm) &&
     nullableString(row.availability) &&
     nullableNumber(row.unitPriceAmount) &&
-    nullableString(row.currency)
+    nullableString(row.currency) &&
+    typeof row.updatedAt === "string" &&
+    !Number.isNaN(Date.parse(row.updatedAt))
   );
 }
 
@@ -92,6 +95,10 @@ export function millimetres(value: number | null): string {
   return thicknessLabel(value);
 }
 
+export function edgebandUpdated(row: CatalogEdgeband): string {
+  return updatedLabel(row.updatedAt);
+}
+
 function searchText(row: CatalogEdgeband): string {
   return [row.code, row.name, row.manufacturer, row.displayName]
     .filter((part): part is string => Boolean(part))
@@ -116,9 +123,15 @@ function compareKey(left: CatalogEdgeband, right: CatalogEdgeband, sort: Edgeban
   if (sort === "width") return compareNullableNumber(left.widthMm, right.widthMm, direction);
   if (sort === "thickness") return compareNullableNumber(left.thicknessMm, right.thicknessMm, direction);
   if (sort === "price") return compareNullableNumber(left.unitPriceAmount, right.unitPriceAmount, direction);
+  if (sort === "updated") return compareNullableNumber(timestamp(left.updatedAt), timestamp(right.updatedAt), direction);
   const byRank = compareNullableNumber(availabilityRank(left.availability), availabilityRank(right.availability), direction);
   if (byRank !== 0) return byRank;
   return directedString(left.availability ?? "", right.availability ?? "", direction);
+}
+
+function timestamp(iso: string): number | null {
+  const value = Date.parse(iso);
+  return Number.isNaN(value) ? null : value;
 }
 
 function availabilityRank(value: string | null): number | null {

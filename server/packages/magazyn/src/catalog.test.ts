@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   isCatalogBoard,
   readViewState,
+  updatedLabel,
   viewCatalog,
   type CatalogBoard,
   type CatalogSort,
@@ -40,6 +41,7 @@ function board(overrides: Partial<CatalogBoard> = {}): CatalogBoard {
     shade: null,
     color: "Biały klasyczny",
     statuses: ["Kolekcja 26+"],
+    updatedAt: "2026-09-26T10:00:00.000Z",
     ...overrides,
   };
 }
@@ -121,5 +123,18 @@ describe("isCatalogBoard", () => {
     const { unitPriceAmount, ...withoutPrice } = board();
     expect(unitPriceAmount).toBe(227.45);
     expect(isCatalogBoard(withoutPrice)).toBe(false);
+    const { updatedAt, ...withoutUpdate } = board();
+    expect(updatedAt).toBe("2026-09-26T10:00:00.000Z");
+    expect(isCatalogBoard(withoutUpdate)).toBe(false);
+  });
+
+  it("sorts rows by the last update and prints it in Warsaw time", () => {
+    const priced = [
+      board({ mebleRefId: "a", updatedAt: "2026-09-26T13:00:00.000Z", structure: "ST9" }),
+      board({ mebleRefId: "b", updatedAt: "2026-09-25T08:00:00.000Z", structure: "PG" }),
+    ];
+    const groups = viewCatalog(priced, {}, { ...defaultSort, rows: "updated", rowDirection: "desc" });
+    expect(groups[0].stock.map((row) => row.mebleRefId)).toEqual(["a", "b"]);
+    expect(updatedLabel("2026-09-26T10:00:00.000Z")).toBe("26.09.2026, 12:00");
   });
 });

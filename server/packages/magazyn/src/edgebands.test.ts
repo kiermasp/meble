@@ -14,6 +14,7 @@ function band(overrides: Partial<CatalogEdgeband> = {}): CatalogEdgeband {
     availability: "24h",
     unitPriceAmount: 1.67,
     currency: "PLN",
+    updatedAt: "2026-09-26T12:00:00.000Z",
     ...overrides,
   };
 }
@@ -59,5 +60,19 @@ describe("browseEdgebands", () => {
   it("rejects a row that is not an edgeband", () => {
     expect(isCatalogEdgeband(band())).toBe(true);
     expect(isCatalogEdgeband({ ...band(), widthMm: "23" })).toBe(false);
+    const { updatedAt, ...withoutUpdate } = band();
+    expect(updatedAt).toBe("2026-09-26T12:00:00.000Z");
+    expect(isCatalogEdgeband(withoutUpdate)).toBe(false);
+  });
+
+  it("sorts by the last update", () => {
+    const ordered = browseEdgebands(
+      [
+        band({ mebleRefId: "old", code: "A", updatedAt: "2026-09-01T08:00:00.000Z" }),
+        band({ mebleRefId: "new", code: "B", updatedAt: "2026-09-26T12:00:00.000Z" }),
+      ],
+      { query: "", sort: "updated", direction: "desc", page: 0 },
+    );
+    expect(ordered.map((row) => row.mebleRefId)).toEqual(["new", "old"]);
   });
 });

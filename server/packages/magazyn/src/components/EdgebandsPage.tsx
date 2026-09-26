@@ -20,6 +20,7 @@ import {
   EDGEBAND_PAGE_SIZE,
   browseEdgebands,
   edgebandPrice,
+  edgebandUpdated,
   isCatalogEdgeband,
   millimetres,
   pageOf,
@@ -39,6 +40,7 @@ const COLUMNS: { key: EdgebandSort; label: string }[] = [
   { key: "thickness", label: "Grubość" },
   { key: "availability", label: "Dostępność" },
   { key: "price", label: "Cena" },
+  { key: "updated", label: "Aktualizacja" },
 ];
 
 export function EdgebandsPage() {
@@ -146,6 +148,7 @@ export function EdgebandsPage() {
                         <TableCell>{millimetres(row.thicknessMm)}</TableCell>
                         <TableCell>{row.availability ?? "—"}</TableCell>
                         <TableCell>{edgebandPrice(row)}</TableCell>
+                        <TableCell>{edgebandUpdated(row)}</TableCell>
                       </TableRow>
                     ))
                   )}

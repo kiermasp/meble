@@ -140,6 +140,9 @@ export class MaterialRow {
 
   @Column({ name: "fetched_at", type: "timestamptz" })
   fetchedAt!: Date;
+
+  @Column({ name: "updated_at", type: "timestamptz", default: () => "CURRENT_TIMESTAMP" })
+  updatedAt!: Date;
 }
 
 @Entity({ name: "material_collection_statuses" })
