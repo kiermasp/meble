@@ -63,7 +63,7 @@ export class MebleCatalogClient {
       return parseProductSpecs(html);
     });
 
-    return cards.map((card, index) => buildVariant(card, specs[index] ?? null, tags.get(card.externalCode) ?? emptyTags(), fetchedAt));
+    return cards.map((card, index) => buildVariant(card, specs[index] ?? null, tags.get(card.mebleRefId) ?? emptyTags(), fetchedAt));
   }
 
   async fetchEdgebands(fetchedAt: Date): Promise<Edgeband[]> {
@@ -125,7 +125,7 @@ export class MebleCatalogClient {
         );
         htmls.push(...rest);
       }
-      const ids = htmls.flatMap((html) => parseListingCards(html, labels).map((card) => card.externalCode));
+      const ids = htmls.flatMap((html) => parseListingCards(html, labels).map((card) => card.mebleRefId));
       for (const id of ids) {
         const current = tags.get(id) ?? emptyTags();
         applyFacet(current, link.group, link.label);
@@ -177,7 +177,7 @@ function applyFacet(tags: VariantTags, group: FacetGroup, label: string): void {
 
 function dedupeCards(cards: ListingCard[]): ListingCard[] {
   const byId = new Map<string, ListingCard>();
-  for (const card of cards) byId.set(card.externalCode, card);
+  for (const card of cards) byId.set(card.mebleRefId, card);
   return [...byId.values()];
 }
 

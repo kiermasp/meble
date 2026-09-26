@@ -18,7 +18,7 @@ const FACET_GROUPS = [
 export type FacetGroup = (typeof FACET_GROUPS)[number];
 
 export interface ListingCard {
-  externalCode: string;
+  mebleRefId: string;
   displayName: string;
   href: string;
   manufacturer: string | null;
@@ -76,10 +76,10 @@ export function parseListingCards(html: string, labels: Map<string, string>): Li
   const cards: ListingCard[] = [];
   $(".productItem--variant").each((_, element) => {
     const card = $(element);
-    const externalCode = card.attr("data-id")?.trim() ?? "";
+    const mebleRefId = card.attr("data-id")?.trim() ?? "";
     const displayName = collapse(card.find("a.productItem__name").first().attr("title") ?? "");
     const href = card.find("a.productItem__name").first().attr("href") ?? "";
-    if (!externalCode || !displayName) return;
+    if (!mebleRefId || !displayName) return;
     const manufacturer =
       collapse(card.find('[itemprop="brand"] [itemprop="name"]').attr("content") ?? "") || null;
     const priceRaw = card.find('[itemprop="price"]').attr("content");
@@ -89,7 +89,7 @@ export function parseListingCards(html: string, labels: Map<string, string>): Li
     const availability = deliveryLabel(delivery.attr("class") ?? "", delivery.attr("data-cr"), labels);
     const title = parseBoardTitle(displayName, manufacturer);
     cards.push({
-      externalCode,
+      mebleRefId,
       displayName,
       href,
       manufacturer,

@@ -4,7 +4,7 @@ import { EdgebandRow } from "./edgeband.row";
 export function toEdgeband(row: EdgebandRow): Edgeband & { id: string } {
   return {
     id: row.id,
-    externalCode: row.externalCode,
+    mebleRefId: row.mebleRefId,
     displayName: row.displayName,
     code: row.code,
     name: row.name,

@@ -1,5 +1,5 @@
 export interface CatalogBoard {
-  externalCode: string;
+  mebleRefId: string;
   displayName: string;
   category: string;
   categoryLabel: string;
@@ -101,7 +101,7 @@ export function isCatalogBoard(value: unknown): value is CatalogBoard {
   if (value == null || typeof value !== "object") return false;
   const row = value as Record<string, unknown>;
   return (
-    typeof row.externalCode === "string" &&
+    typeof row.mebleRefId === "string" &&
     typeof row.displayName === "string" &&
     typeof row.category === "string" &&
     typeof row.categoryLabel === "string" &&

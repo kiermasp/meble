@@ -66,7 +66,7 @@ describe("shop catalog parsers", () => {
     const cards = parseListingCards(LISTING, labels);
     expect(cards).toEqual([
       expect.objectContaining({
-        externalCode: "5829997",
+        mebleRefId: "5829997",
         manufacturer: "Egger",
         decorCode: "W960",
         decorName: "Biały klasyczny",
@@ -77,7 +77,7 @@ describe("shop catalog parsers", () => {
         currency: "PLN",
       }),
       expect.objectContaining({
-        externalCode: "7033936",
+        mebleRefId: "7033936",
         manufacturer: "Kronospan",
         decorCode: "5981",
         decorName: "Kaszmir",

@@ -14,9 +14,9 @@ export class EdgebandStore {
 
   async replaceAll(edgebands: Edgeband[]): Promise<void> {
     const byCode = new Map<string, Edgeband>();
-    for (const edgeband of edgebands) byCode.set(edgeband.externalCode, edgeband);
+    for (const edgeband of edgebands) byCode.set(edgeband.mebleRefId, edgeband);
     const values = [...byCode.values()].map((edgeband) => ({
-      externalCode: edgeband.externalCode,
+      mebleRefId: edgeband.mebleRefId,
       displayName: edgeband.displayName,
       code: edgeband.code,
       name: edgeband.name,
@@ -31,14 +31,14 @@ export class EdgebandStore {
     }));
     if (values.length === 0) return;
     await this.edgebands.upsert(values, {
-      conflictPaths: ["externalCode"],
+      conflictPaths: ["mebleRefId"],
       skipUpdateIfNoValuesChanged: false,
     });
     const codes = [...byCode.keys()];
     await this.edgebands
       .createQueryBuilder()
       .delete()
-      .where("external_code NOT IN (:...codes)", { codes })
+      .where("meble_ref_id NOT IN (:...codes)", { codes })
       .execute();
   }
 

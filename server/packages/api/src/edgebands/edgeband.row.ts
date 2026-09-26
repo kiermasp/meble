@@ -1,13 +1,13 @@
 import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: "edgebands" })
-@Index(["externalCode"], { unique: true })
+@Index(["mebleRefId"], { unique: true })
 export class EdgebandRow {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column({ name: "external_code", type: "text" })
-  externalCode!: string;
+  @Column({ name: "meble_ref_id", type: "text" })
+  mebleRefId!: string;
 
   @Column({ name: "display_name", type: "text" })
   displayName!: string;

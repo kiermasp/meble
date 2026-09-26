@@ -40,7 +40,7 @@ export interface CuttingPiece {
   quantity: number;
   /**
    * materials.id of one purchasable board.
-   * That row is unique on (category, externalCode); thickness and structure are columns of the same row.
+   * That row is unique on (category, mebleRefId); thickness and structure are columns of the same row.
    */
   materialId: string;
   grain: GrainDirection;

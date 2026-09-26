@@ -1,8 +1,8 @@
 import { type ShopSectionSlug } from "./shop-catalog";
 
 export interface Material {
-  /** Shop product id, one row per purchasable thickness × structure. */
-  externalCode: string;
+  /** meble.pl product id from the listing card data-id. Same value as id_produktu. */
+  mebleRefId: string;
   displayName: string;
   category: ShopSectionSlug;
   subtype: string | null;

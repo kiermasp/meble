@@ -72,7 +72,7 @@ describe("parked cutting orders", () => {
     });
     await schema.initialize();
     const inserted: { id: string }[] = await schema.query(
-      `INSERT INTO materials (external_code, display_name, category, structure, thickness_mm, fetched_at)
+      `INSERT INTO materials (meble_ref_id, display_name, category, structure, thickness_mm, fetched_at)
        VALUES
          ('1039757', 'Płyta meblowa EGGER H1250 ST36 Jesion Navarra 18.6 mm', 'plyty-meblowe', 'ST36 Feelwood Brushed', 18.6, now()),
          ('1039758', 'Płyta meblowa EGGER H1250 ST36 Jesion Navarra 2800x1032 37.2 mm', 'plyty-meblowe', 'ST36 Feelwood Brushed', 37.2, now())
@@ -81,7 +81,7 @@ describe("parked cutting orders", () => {
     boardA = inserted[0]?.id ?? "";
     boardB = inserted[1]?.id ?? "";
     const tapes: { id: string }[] = await schema.query(
-      `INSERT INTO edgebands (external_code, display_name, code, name, manufacturer, width_mm, thickness_mm, unit_price_amount, currency, availability, fetched_at)
+      `INSERT INTO edgebands (meble_ref_id, display_name, code, name, manufacturer, width_mm, thickness_mm, unit_price_amount, currency, availability, fetched_at)
        VALUES ('1050019', 'Obrzeże ABS U702 ST9 Kaszmir 23 x 0.8 mm EGGER', 'U702', 'Kaszmir', 'Egger', 23, 0.8, 1.67, 'PLN', '24h', now())
        RETURNING id`,
     );

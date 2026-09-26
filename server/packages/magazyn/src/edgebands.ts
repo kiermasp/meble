@@ -1,7 +1,7 @@
 import { formatMoney, thicknessLabel } from "./catalog";
 
 export interface CatalogEdgeband {
-  externalCode: string;
+  mebleRefId: string;
   displayName: string;
   code: string | null;
   name: string | null;
@@ -38,7 +38,7 @@ export function isCatalogEdgeband(value: unknown): value is CatalogEdgeband {
   if (!value || typeof value !== "object") return false;
   const row = value as Record<string, unknown>;
   return (
-    typeof row.externalCode === "string" &&
+    typeof row.mebleRefId === "string" &&
     typeof row.displayName === "string" &&
     nullableString(row.code) &&
     nullableString(row.name) &&

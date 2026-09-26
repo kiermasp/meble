@@ -1,6 +1,7 @@
 /** One purchasable edgeband from the shop listing. */
 export interface Edgeband {
-  externalCode: string;
+  /** meble.pl product id from the listing card data-id. Same value as id_produktu. */
+  mebleRefId: string;
   displayName: string;
   code: string | null;
   name: string | null;

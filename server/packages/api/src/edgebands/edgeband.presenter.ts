@@ -3,7 +3,7 @@ import type { Edgeband } from "@meble/domain";
 export function presentEdgeband(edgeband: Edgeband & { id: string }) {
   return {
     id: edgeband.id,
-    externalCode: edgeband.externalCode,
+    mebleRefId: edgeband.mebleRefId,
     displayName: edgeband.displayName,
     code: edgeband.code,
     name: edgeband.name,

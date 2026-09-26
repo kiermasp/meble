@@ -8,7 +8,7 @@ const testUrl = adminUrl.replace(/\/[^/?]+(\?|$)/, "/meble_test$1");
 
 function variant(overrides: Partial<Material> = {}): Material {
   return {
-    externalCode: "5829997",
+    mebleRefId: "5829997",
     displayName: "Płyta meblowa EGGER W960 SM Biały klasyczny 18 mm",
     category: "plyty-meblowe",
     subtype: "Białe",
@@ -67,7 +67,7 @@ describe("MaterialStore upsert", () => {
     await store.upsertAll([
       variant(),
       variant({
-        externalCode: "3149044",
+        mebleRefId: "3149044",
         manufacturer: "Kronospan",
         decorCode: "U8685",
         structure: "BS",
@@ -84,7 +84,7 @@ describe("MaterialStore upsert", () => {
     ]);
     await store.upsertAll([
       variant({
-        externalCode: "1",
+        mebleRefId: "1",
         category: "sklejki",
         displayName: "Sklejka",
         manufacturer: null,
@@ -109,7 +109,7 @@ describe("MaterialStore upsert", () => {
     const rows = await store.list();
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({
-      externalCode: "5829997",
+      mebleRefId: "5829997",
       unitPriceAmount: 230,
       availability: "7 dni",
       currency: "PLN",

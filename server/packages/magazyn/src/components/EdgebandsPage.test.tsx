@@ -9,7 +9,7 @@ import { theme } from "../theme";
 
 function band(overrides: Partial<CatalogEdgeband> = {}): CatalogEdgeband {
   return {
-    externalCode: "1050019",
+    mebleRefId: "1050019",
     displayName: "Obrzeże ABS U702 ST9 Kaszmir 23 x 0.8 mm Egger",
     code: "U702",
     name: "Kaszmir",
@@ -27,7 +27,7 @@ function band(overrides: Partial<CatalogEdgeband> = {}): CatalogEdgeband {
 const rows = [
   band(),
   band({
-    externalCode: "200",
+    mebleRefId: "200",
     code: "W960",
     name: "Biały",
     thicknessMm: 2,
@@ -35,7 +35,7 @@ const rows = [
     unitPriceAmount: 3.5,
   }),
   band({
-    externalCode: "300",
+    mebleRefId: "300",
     displayName: "Obrzeże REHAU 2464L Noble Matt",
     code: "2464L",
     name: "Noble Matt",

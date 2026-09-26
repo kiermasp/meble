@@ -138,7 +138,7 @@ export function EdgebandsPage() {
                     </TableRow>
                   ) : (
                     visible.map((row) => (
-                      <TableRow key={row.externalCode} hover>
+                      <TableRow key={row.mebleRefId} hover>
                         <TableCell>{row.code ?? "—"}</TableCell>
                         <TableCell>{row.name ?? "—"}</TableCell>
                         <TableCell>{row.manufacturer ?? "—"}</TableCell>

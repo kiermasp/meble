@@ -2,7 +2,7 @@ import { sectionLabel, type Material } from "@meble/domain";
 
 export function presentMaterial(material: Material) {
   return {
-    externalCode: material.externalCode,
+    mebleRefId: material.mebleRefId,
     displayName: material.displayName,
     category: material.category,
     categoryLabel: sectionLabel(material.category),

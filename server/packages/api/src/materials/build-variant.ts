@@ -21,7 +21,7 @@ export function buildVariant(
   fetchedAt: Date,
 ): Material {
   return {
-    externalCode: card.externalCode,
+    mebleRefId: card.mebleRefId,
     displayName: card.displayName,
     category: "plyty-meblowe",
     subtype: spec?.subtype ?? null,

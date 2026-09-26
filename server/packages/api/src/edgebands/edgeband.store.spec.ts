@@ -8,7 +8,7 @@ const testUrl = adminUrl.replace(/\/[^/?]+(\?|$)/, "/meble_test$1");
 
 function tape(overrides: Partial<Edgeband> = {}): Edgeband {
   return {
-    externalCode: "1050019",
+    mebleRefId: "1050019",
     displayName: "Obrzeże ABS U702 ST9 Kaszmir 23 x 0.8 mm EGGER",
     code: "U702",
     name: "Kaszmir",
@@ -50,12 +50,12 @@ describe("EdgebandStore", () => {
   });
 
   it("upserts a variant and drops a code missing from the next run", async () => {
-    await store.replaceAll([tape(), tape({ externalCode: "1050020", unitPriceAmount: 2.1 })]);
+    await store.replaceAll([tape(), tape({ mebleRefId: "1050020", unitPriceAmount: 2.1 })]);
     await store.replaceAll([tape({ unitPriceAmount: 1.8, availability: "48h" })]);
     const rows = await store.list();
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({
-      externalCode: "1050019",
+      mebleRefId: "1050019",
       code: "U702",
       widthMm: 23,
       thicknessMm: 0.8,

@@ -16,7 +16,7 @@ const defaultSort: CatalogSort = {
 
 function board(overrides: Partial<CatalogBoard> = {}): CatalogBoard {
   return {
-    externalCode: "5829997",
+    mebleRefId: "5829997",
     displayName: "Płyta meblowa EGGER W960 SM Biały klasyczny 18 mm",
     category: "plyty-meblowe",
     categoryLabel: "Płyty meblowe",
@@ -45,7 +45,7 @@ describe("viewCatalog", () => {
   const boards = [
     board(),
     board({
-      externalCode: "5999999",
+      mebleRefId: "5999999",
       structure: "ST7",
       thicknessMm: 36,
       availability: "14 dni",
@@ -53,7 +53,7 @@ describe("viewCatalog", () => {
       decorKind: "Produkcyjne (na zamówienie)",
     }),
     board({
-      externalCode: "3149044",
+      mebleRefId: "3149044",
       manufacturer: "Kronospan",
       decorCode: "5981",
       decorName: "Kaszmir",
@@ -77,15 +77,15 @@ describe("viewCatalog", () => {
   it("combines filters and still offers every option from the full catalog", () => {
     const groups = viewCatalog(boards, { manufacturer: ["Egger"], thickness: ["18"] }, defaultSort);
     expect(groups).toHaveLength(1);
-    expect(groups[0].stock.map((row) => row.externalCode)).toEqual(["5829997"]);
+    expect(groups[0].stock.map((row) => row.mebleRefId)).toEqual(["5829997"]);
     expect(groups[0].ordered).toEqual([]);
   });
 
   it("sorts rows by lead time and puts a missing price last", () => {
     const priced = [
-      board({ externalCode: "a", availability: "7 dni", unitPriceAmount: 100, thicknessMm: 18 }),
-      board({ externalCode: "b", availability: "24h", unitPriceAmount: null, thicknessMm: 18, structure: "ST9" }),
-      board({ externalCode: "c", availability: "14 dni", unitPriceAmount: 50, thicknessMm: 18, structure: "PG" }),
+      board({ mebleRefId: "a", availability: "7 dni", unitPriceAmount: 100, thicknessMm: 18 }),
+      board({ mebleRefId: "b", availability: "24h", unitPriceAmount: null, thicknessMm: 18, structure: "ST9" }),
+      board({ mebleRefId: "c", availability: "14 dni", unitPriceAmount: 50, thicknessMm: 18, structure: "PG" }),
     ];
     const byLead = viewCatalog(priced, {}, { ...defaultSort, rows: "availability", rowDirection: "asc" });
     expect(byLead[0].stock.map((row) => row.availability)).toEqual(["24h", "7 dni", "14 dni"]);

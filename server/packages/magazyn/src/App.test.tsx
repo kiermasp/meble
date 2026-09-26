@@ -9,7 +9,7 @@ import { theme } from "./theme";
 
 function board(overrides: Partial<CatalogBoard> = {}): CatalogBoard {
   return {
-    externalCode: "5829997",
+    mebleRefId: "5829997",
     displayName: "Płyta meblowa EGGER W960 SM Biały klasyczny 18 mm",
     category: "plyty-meblowe",
     categoryLabel: "Płyty meblowe",
@@ -37,14 +37,14 @@ function board(overrides: Partial<CatalogBoard> = {}): CatalogBoard {
 const boards = [
   board(),
   board({
-    externalCode: "5829998",
+    mebleRefId: "5829998",
     structure: "ST9",
     thicknessMm: 36,
     availability: "7 dni",
     unitPriceAmount: 100,
   }),
   board({
-    externalCode: "5999999",
+    mebleRefId: "5999999",
     structure: "ST7",
     thicknessMm: 16,
     availability: "14 dni",
@@ -52,7 +52,7 @@ const boards = [
     decorKind: "Produkcyjne (na zamówienie)",
   }),
   board({
-    externalCode: "3149044",
+    mebleRefId: "3149044",
     manufacturer: "Kronospan",
     decorCode: "5981",
     decorName: "Kaszmir",

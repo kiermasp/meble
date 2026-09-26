@@ -77,7 +77,7 @@ describe("buildEdgeband", () => {
     const [card] = parseListingCards(html, labels);
     expect(card).toBeDefined();
     expect(buildEdgeband(card!, new Date("2026-09-26T12:00:00.000Z"))).toMatchObject({
-      externalCode: "1050019",
+      mebleRefId: "1050019",
       code: "U702",
       name: "Kaszmir",
       manufacturer: "Egger",

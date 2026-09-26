@@ -84,7 +84,7 @@ function VariantTable(props: {
       </TableHead>
       <TableBody>
         {props.rows.map((board) => (
-          <TableRow key={board.externalCode} hover>
+          <TableRow key={board.mebleRefId} hover>
             <TableCell>{thicknessLabel(board.thicknessMm)}</TableCell>
             <TableCell>{board.structure || "—"}</TableCell>
             <TableCell>

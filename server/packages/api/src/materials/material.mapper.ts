@@ -6,7 +6,7 @@ export function toMaterial(row: MaterialRow): Material {
     throw new Error(`Unknown category in storage: ${row.category}`);
   }
   return {
-    externalCode: row.externalCode,
+    mebleRefId: row.mebleRefId,
     displayName: row.displayName,
     category: row.category,
     subtype: row.subtype,

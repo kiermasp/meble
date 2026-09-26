@@ -15,10 +15,10 @@ export class MaterialStore {
   async upsertAll(materials: Material[]): Promise<void> {
     const byKey = new Map<string, Material>();
     for (const material of materials) {
-      byKey.set(`${material.category}\0${material.externalCode}`, material);
+      byKey.set(`${material.category}\0${material.mebleRefId}`, material);
     }
     const values = [...byKey.values()].map((material) => ({
-      externalCode: material.externalCode,
+      mebleRefId: material.mebleRefId,
       displayName: material.displayName,
       category: material.category,
       subtype: material.subtype,
@@ -42,19 +42,19 @@ export class MaterialStore {
     }));
     if (values.length === 0) return;
     await this.materials.upsert(values, {
-      conflictPaths: ["category", "externalCode"],
+      conflictPaths: ["category", "mebleRefId"],
       skipUpdateIfNoValuesChanged: false,
     });
   }
 
   async replaceCategory(category: ShopSectionSlug, materials: Material[]): Promise<void> {
     await this.upsertAll(materials);
-    const codes = [...new Set(materials.map((material) => material.externalCode))];
+    const codes = [...new Set(materials.map((material) => material.mebleRefId))];
     if (codes.length === 0) return;
     await this.materials
       .createQueryBuilder()
       .delete()
-      .where("category = :category AND external_code NOT IN (:...codes)", { category, codes })
+      .where("category = :category AND meble_ref_id NOT IN (:...codes)", { category, codes })
       .execute();
   }
 
@@ -70,7 +70,7 @@ export class MaterialStore {
   async list(category?: ShopSectionSlug): Promise<Material[]> {
     const rows = await this.materials.find({
       where: category ? { category } : {},
-      order: { category: "ASC", externalCode: "ASC" },
+      order: { category: "ASC", mebleRefId: "ASC" },
     });
     return rows.map(toMaterial);
   }
