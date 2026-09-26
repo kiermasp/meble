@@ -5,6 +5,8 @@ interface Board {
   displayName: string;
   category: string;
   categoryLabel: string;
+  manufacturer: string | null;
+  thicknessMm: number | null;
   availability: Availability;
 }
 
@@ -74,7 +76,7 @@ function table(): HTMLTableElement {
   const element = document.createElement("table");
   const head = document.createElement("thead");
   const row = document.createElement("tr");
-  for (const label of ["Kod", "Nazwa", "Kategoria", "Dostępność"]) {
+  for (const label of ["Kod", "Nazwa", "Producent", "Grubość", "Kategoria", "Dostępność"]) {
     const cell = document.createElement("th");
     cell.textContent = label;
     row.append(cell);
@@ -153,12 +155,20 @@ function renderRows(): void {
       row.append(
         cell(board.externalCode),
         cell(board.displayName),
+        cell(board.manufacturer || "—"),
+        cell(thicknessLabel(board.thicknessMm)),
         cell(board.categoryLabel || board.category),
         availabilityCell(board.availability),
       );
       return row;
     }),
   );
+}
+
+function thicknessLabel(mm: number | null): string {
+  if (mm == null || !Number.isFinite(mm)) return "—";
+  const formatted = new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 1 }).format(mm);
+  return `${formatted} mm`;
 }
 
 function cell(text: string): HTMLTableCellElement {
