@@ -17,5 +17,34 @@ services:
       timeout: 5s
       retries: 20
 
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://meble:meble@postgres:5432/meble
+      MEBLE_BASE_URL: https://www.meble.pl
+      SYNC_INTERVAL_MS: "10800000"
+      PORT: "3000"
+      TYPEORM_SYNCHRONIZE: "true"
+    ports:
+      - "3010:3000"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/health').then((response)=>process.exit(response.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 36
+      start_period: 30s
+
 volumes:
   meble_pg:
