@@ -9,6 +9,7 @@ Local furniture-board catalog in front of meble.pl, plus the SketchUp bridge in 
 - `sketchup_chat_bridge` — pliki mostka, zwykła część tego repozytorium. Osobne repozytorium [kiermasp/sketchup-chat-bridge](https://github.com/kiermasp/sketchup-chat-bridge) zostaje na GitHubie i nie jest już lokalnym klonem.
 - `server/packages/domain` — typy domenowe, bez Nest, HTTP i ORM.
 - `server/packages/api` — aplikacja NestJS. Każdy endpoint przyjmuje i zwraca tylko `application/json`.
+- `magazyn` — strona Vite, osobny proces. Czyta JSON z API, nie jest serwowana przez Nest.
 - `docker-compose.yml` — Postgres i API. Uruchamiaj z tego katalogu.
 
 The live plugin in `~/Documents/ChatGPT/sketchup api` is a different copy.
@@ -59,3 +60,15 @@ npm test
 ```
 
 Parser czyta prawdziwą odpowiedź `showDialogPlyta`. Drugi test sprawdza, że ponowny upsert aktualizuje płytę i nie dodaje duplikatu.
+
+## Magazyn
+
+Osobna strona, poza serwerem API. Domyślny adres API to `http://localhost:3010` (`VITE_API_BASE_URL`).
+
+```bash
+cd ~/github/meble/magazyn
+npm install
+npm run dev
+```
+
+Strona jest na http://localhost:5173.
