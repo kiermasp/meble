@@ -1,16 +1,28 @@
-import { isShopSection, type Material } from "@meble/domain";
+import type { Material } from "@meble/domain";
 import { MaterialRow } from "./material.row";
 
-export function toMaterial(row: MaterialRow): Material {
-  if (!isShopSection(row.category)) {
-    throw new Error(`Unknown category in storage: ${row.category}`);
-  }
+export interface StoredMaterial extends Material {
+  id: string;
+  categoryId: string;
+  categoryLabel: string;
+  manufacturerId: string | null;
+  decorKindId: string | null;
+}
+
+export function toMaterial(row: MaterialRow): StoredMaterial {
+  const statuses = (row.collectionLinks ?? [])
+    .flatMap((link) => (link.status ? [link.status] : []))
+    .sort((left, right) => left.sortOrder - right.sortOrder || left.name.localeCompare(right.name, "pl"));
   return {
+    id: row.id,
     mebleRefId: row.mebleRefId,
     displayName: row.displayName,
-    category: row.category,
+    categoryId: row.categoryId,
+    category: row.category.code,
+    categoryLabel: row.category.name,
     subtype: row.subtype,
-    manufacturer: row.manufacturer,
+    manufacturerId: row.manufacturerId,
+    manufacturer: row.manufacturer?.name ?? null,
     decorCode: row.decorCode,
     decorName: row.decorName,
     structure: row.structure,
@@ -19,13 +31,14 @@ export function toMaterial(row: MaterialRow): Material {
     availability: row.availability,
     unitPriceAmount: row.unitPriceAmount,
     currency: row.currency,
-    decorKind: row.decorKind,
-    waterResistance: row.waterResistance,
-    brightness: row.brightness,
-    decorType: row.decorType,
-    shade: row.shade,
-    color: row.color,
-    statuses: row.statuses ?? [],
+    decorKindId: row.decorKindId,
+    decorKind: row.decorKind?.name ?? null,
+    waterResistance: row.waterResistance?.name ?? null,
+    brightness: row.brightness?.name ?? null,
+    decorType: row.decorType?.name ?? null,
+    shade: row.shade?.name ?? null,
+    color: row.color?.name ?? null,
+    statuses: statuses.map((status) => status.name),
     fetchedAt: new Date(row.fetchedAt),
   };
 }

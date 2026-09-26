@@ -1,5 +1,7 @@
 import { DataSource } from "typeorm";
 import type { Edgeband } from "@meble/domain";
+import { CategoryRow, ManufacturerRow } from "../lookups/lookup.rows";
+import { ShopLookupStore } from "../lookups/shop-lookup.store";
 import { EdgebandRow } from "./edgeband.row";
 import { EdgebandStore } from "./edgeband.store";
 
@@ -38,11 +40,11 @@ describe("EdgebandStore", () => {
     dataSource = new DataSource({
       type: "postgres",
       url: testUrl,
-      entities: [EdgebandRow],
+      entities: [CategoryRow, ManufacturerRow, EdgebandRow],
       synchronize: true,
     });
     await dataSource.initialize();
-    store = new EdgebandStore(dataSource.getRepository(EdgebandRow));
+    store = new EdgebandStore(dataSource.getRepository(EdgebandRow), new ShopLookupStore(dataSource));
   });
 
   afterAll(async () => {

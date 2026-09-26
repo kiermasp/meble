@@ -36,9 +36,12 @@ API nasłuchuje na porcie **3010** (w kontenerze 3000). Magazyn nasłuchuje na p
 API wystawia wyłącznie JSON (`Content-Type: application/json`):
 
 - `GET /health` — `{ "status": "ok", "materials": <liczba> }`
-- `GET /materials` — warianty płyt: `manufacturer`, `decorCode`, `decorName`, `structure`, `thicknessMm`, `format`, `availability`, `unitPriceAmount`, `currency`
-- `GET /materials?category=plyty-meblowe` — jedna kategoria
-- `GET /edgebands` — warianty obrzeży: `code`, `name`, `manufacturer`, `widthMm`, `thicknessMm`, `availability`, `unitPriceAmount`, `currency`
+- `GET /materials` — warianty płyt: `mebleRefId` (id produktu ze sklepu, `data-id`), `categoryId`, `manufacturerId`, `decorKindId`, `structure`, `thicknessMm`, `format`, `availability`, `unitPriceAmount`, `currency`
+- `GET /materials?category=plyty-meblowe` — jedna kategoria, po angielskim kodzie z tabeli `categories`
+- `GET /edgebands` — warianty obrzeży: `mebleRefId` (id produktu ze sklepu), `code` (kod dekoru, nie id sklepu), `name`, `manufacturer`, `widthMm`, `thicknessMm`, `availability`, `unitPriceAmount`, `currency`
+- `GET /categories`, `GET /manufacturers`, `GET /decor-kinds` — słowniki: `id`, `code`, `name` (po polsku), `sortOrder`, `mebleRefId` (id cechy lub kategorii ze sklepu)
+
+Słowniki sklepu (kategoria, producent, rodzaj dekoru, wodoodporność, typ dekoru, odcień, kolor, jasność, status kolekcji) są tabelami z kluczem obcym z `materials`. `meble_ref_id` na płycie i obrzeżu to id produktu (`data-id`). Na słowniku to id wartości filtra (`filtr_cechy` / `filtr_statusy`) albo `id_kategorii`.
 
 ```bash
 curl -H 'Accept: application/json' http://127.0.0.1:3010/health
@@ -67,3 +70,5 @@ Strona React serwowana z `server/packages/magazyn`, nie przez API. API zostaje w
 Interfejs korzysta z Material UI. Strona płyt (http://localhost:3011/) ma boczny panel filtrów: Producenci, Grubość, Struktura, Rodzaj dekoru, Format, Wodoodporność, a także Jasność, Typ dekoru, Odcień, Kolor i Status, gdy katalog je ma. Każdy dekor jest blokiem z wierszami Grubość, Struktura, Dostępność i Cena/szt. Nagłówki tych kolumn sortują wiersze, a lista dekorów sortuje się po nazwie, producencie, cenie albo grubości. Warianty produkcyjne są pod osobnym nagłówkiem „Warianty na zamówienie”.
 
 Strona obrzeży (http://localhost:3011/obrzeza) wyszukuje po kodzie, nazwie i producencie. Tabela pokazuje kod, nazwę, producenta, szerokość, grubość, dostępność i cenę. Nagłówki kolumn sortują wiersze.
+
+Filtry Kategoria, Producenci i Rodzaj dekoru biorą polskie nazwy i kolejność z tabel słowników. Nowy rodzaj dekoru dopisany w tabeli pojawia się bez zmiany kodu.

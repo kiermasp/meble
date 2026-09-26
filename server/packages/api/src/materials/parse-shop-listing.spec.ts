@@ -7,6 +7,7 @@ import {
   listingPageUrl,
   parseDeliveryLabels,
   parseListingCards,
+  parseListingDictionaries,
 } from "./parse-shop-listing";
 
 const CSS = `
@@ -114,6 +115,34 @@ describe("shop catalog parsers", () => {
     expect(listingPageUrl("https://www.meble.pl/plyty-meblowe/magazynowe/?view=icon", 2, "suffix")).toBe(
       "https://www.meble.pl/plyty-meblowe/magazynowe/page2.html?view=icon",
     );
+  });
+
+  it("reads shop dictionary ids from the listing sidebar", () => {
+    const html = `
+      <script>$.post('/plyty-meblowe/go/ajaxRequest/', {ajax: "dodaj_do_koszyka", id_kategorii: 1, id_oferty: idOferty});</script>
+      <div class="category__sidebar producenci">
+        <div class="checkbox" data-nr="1">
+          <input value="2962397" name="filtr_cechy[7][2962397]">
+          <label class="nazwa-cechy" title="Egger">Egger</label>
+        </div>
+      </div>
+      <div class="category__sidebar rodzaj-dekoru">
+        <div class="checkbox" data-nr="2">
+          <input value="3263402">
+          <label title="Produkcyjne (na zamówienie)"></label>
+        </div>
+      </div>
+    `;
+    const dictionaries = parseListingDictionaries(html, { code: "plyty-meblowe", name: "Płyty meblowe", sortOrder: 1 });
+    expect(dictionaries.category).toMatchObject({ code: "plyty-meblowe", mebleRefId: "1", name: "Płyty meblowe" });
+    expect(dictionaries.manufacturers).toEqual([
+      { mebleRefId: "2962397", code: "egger", name: "Egger", sortOrder: 1 },
+    ]);
+    expect(dictionaries.decorKinds[0]).toMatchObject({
+      mebleRefId: "3263402",
+      code: "produkcyjne-na-zamowienie",
+      sortOrder: 2,
+    });
   });
 
   it("reads the product-page specification, not the other thicknesses", () => {

@@ -1,7 +1,9 @@
 import { DataSource } from "typeorm";
 import type { Material } from "@meble/domain";
+import { LOOKUP_ENTITIES } from "../lookups/lookup.rows";
+import { ShopLookupStore } from "../lookups/shop-lookup.store";
 import { MaterialStore } from "./material-store";
-import { MaterialRow } from "./material.row";
+import { MaterialCollectionStatusRow, MaterialRow } from "./material.row";
 
 const adminUrl = process.env.TEST_DATABASE_URL ?? "postgres://meble:meble@127.0.0.1:5432/meble";
 const testUrl = adminUrl.replace(/\/[^/?]+(\?|$)/, "/meble_test$1");
@@ -51,12 +53,16 @@ describe("MaterialStore upsert", () => {
     dataSource = new DataSource({
       type: "postgres",
       url: testUrl,
-      entities: [MaterialRow],
+      entities: [...LOOKUP_ENTITIES, MaterialRow, MaterialCollectionStatusRow],
       synchronize: true,
       dropSchema: true,
     });
     await dataSource.initialize();
-    store = new MaterialStore(dataSource.getRepository(MaterialRow));
+    store = new MaterialStore(
+      dataSource.getRepository(MaterialRow),
+      dataSource.getRepository(MaterialCollectionStatusRow),
+      new ShopLookupStore(dataSource),
+    );
   });
 
   afterAll(async () => {
@@ -116,5 +122,17 @@ describe("MaterialStore upsert", () => {
       category: "plyty-meblowe",
     });
     expect(rows[0]?.fetchedAt.toISOString()).toBe("2026-09-26T13:00:00.000Z");
+    expect(rows[0]?.categoryId).toEqual(expect.any(String));
+    expect(rows[0]?.manufacturerId).toEqual(expect.any(String));
+    expect(rows[0]?.decorKind).toBe("Magazynowe");
+    expect(rows[0]?.statuses).toEqual(["Kolekcja 26+"]);
+    const foreignKeys: { definition: string }[] = await dataSource.query(
+      `SELECT pg_get_constraintdef(oid) AS definition
+       FROM pg_constraint WHERE contype = 'f' AND conrelid = 'materials'::regclass`,
+    );
+    const definitions = foreignKeys.map((row) => row.definition).join("\n");
+    expect(definitions).toContain("FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT");
+    expect(definitions).toContain("FOREIGN KEY (manufacturer_id) REFERENCES manufacturers(id) ON DELETE RESTRICT");
+    expect(definitions).toContain("FOREIGN KEY (decor_kind_id) REFERENCES decor_kinds(id) ON DELETE RESTRICT");
   });
 });

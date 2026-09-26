@@ -5,14 +5,15 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
 import { configureHttp } from "../configure-http";
 import { EdgebandRow } from "../edgebands/edgeband.row";
-import { MaterialRow } from "../materials/material.row";
+import { LOOKUP_ENTITIES } from "../lookups/lookup.rows";
+import { MaterialCollectionStatusRow, MaterialRow } from "../materials/material.row";
 import { CuttingOrdersModule } from "./cutting-orders.module";
 import { CUTTING_ORDER_ENTITIES } from "./cutting-order.rows";
 
 const adminUrl = process.env.TEST_DATABASE_URL ?? "postgres://meble:meble@127.0.0.1:5432/meble";
 const testUrl = adminUrl.replace(/\/[^/?]+(\?|$)/, "/meble_test$1");
 
-const ENTITIES = [MaterialRow, EdgebandRow, ...CUTTING_ORDER_ENTITIES];
+const ENTITIES = [...LOOKUP_ENTITIES, MaterialRow, MaterialCollectionStatusRow, EdgebandRow, ...CUTTING_ORDER_ENTITIES];
 
 function piece(materialId: string, edgebandId: string, overrides: Record<string, unknown> = {}) {
   return {
@@ -71,19 +72,31 @@ describe("parked cutting orders", () => {
       dropSchema: true,
     });
     await schema.initialize();
-    const inserted: { id: string }[] = await schema.query(
-      `INSERT INTO materials (meble_ref_id, display_name, category, structure, thickness_mm, fetched_at)
-       VALUES
-         ('1039757', 'Płyta meblowa EGGER H1250 ST36 Jesion Navarra 18.6 mm', 'plyty-meblowe', 'ST36 Feelwood Brushed', 18.6, now()),
-         ('1039758', 'Płyta meblowa EGGER H1250 ST36 Jesion Navarra 2800x1032 37.2 mm', 'plyty-meblowe', 'ST36 Feelwood Brushed', 37.2, now())
+    const categories: { id: string }[] = await schema.query(
+      `INSERT INTO categories (code, name, sort_order, meble_ref_id)
+       VALUES ('plyty-meblowe', 'Płyty meblowe', 1, '1'), ('obrzeza', 'Obrzeża', 3, '22')
        RETURNING id`,
+    );
+    const manufacturers: { id: string }[] = await schema.query(
+      `INSERT INTO manufacturers (code, name, sort_order, meble_ref_id)
+       VALUES ('egger', 'Egger', 1, '2962397')
+       RETURNING id`,
+    );
+    const inserted: { id: string }[] = await schema.query(
+      `INSERT INTO materials (meble_ref_id, display_name, category_id, structure, thickness_mm, fetched_at)
+       VALUES
+         ('1039757', 'Płyta meblowa EGGER H1250 ST36 Jesion Navarra 18.6 mm', $1, 'ST36 Feelwood Brushed', 18.6, now()),
+         ('1039758', 'Płyta meblowa EGGER H1250 ST36 Jesion Navarra 2800x1032 37.2 mm', $1, 'ST36 Feelwood Brushed', 37.2, now())
+       RETURNING id`,
+      [categories[0]?.id],
     );
     boardA = inserted[0]?.id ?? "";
     boardB = inserted[1]?.id ?? "";
     const tapes: { id: string }[] = await schema.query(
-      `INSERT INTO edgebands (meble_ref_id, display_name, code, name, manufacturer, width_mm, thickness_mm, unit_price_amount, currency, availability, fetched_at)
-       VALUES ('1050019', 'Obrzeże ABS U702 ST9 Kaszmir 23 x 0.8 mm EGGER', 'U702', 'Kaszmir', 'Egger', 23, 0.8, 1.67, 'PLN', '24h', now())
+      `INSERT INTO edgebands (meble_ref_id, display_name, category_id, code, name, manufacturer_id, width_mm, thickness_mm, unit_price_amount, currency, availability, fetched_at)
+       VALUES ('1050019', 'Obrzeże ABS U702 ST9 Kaszmir 23 x 0.8 mm EGGER', $1, 'U702', 'Kaszmir', $2, 23, 0.8, 1.67, 'PLN', '24h', now())
        RETURNING id`,
+      [categories[1]?.id, manufacturers[0]?.id],
     );
     tapeId = tapes[0]?.id ?? "";
     const pieceKeys: { definition: string }[] = await schema.query(

@@ -1,4 +1,6 @@
 import { load } from "cheerio";
+import { englishCode } from "../lookups/english-code";
+import type { ListingDictionaries, ShopTerm } from "../lookups/shop-term";
 import { parseBoardTitle } from "./parse-board-title";
 
 const FACET_GROUPS = [
@@ -154,6 +156,66 @@ export function parseFacetLinks(html: string): FacetLink[] {
       });
   });
   return links;
+}
+
+const DICTIONARY_GROUPS = {
+  producenci: "manufacturers",
+  "rodzaj-dekoru": "decorKinds",
+  wodoodpornosc: "waterResistances",
+  "typ-dekoru": "decorTypes",
+  odcien: "shades",
+  kolor: "colors",
+  jasnosc: "brightnesses",
+  "bloczek-status": "collectionStatuses",
+} as const;
+
+export function parseListingDictionaries(
+  html: string,
+  category: { code: string; name: string; sortOrder: number },
+): ListingDictionaries {
+  const $ = load(html);
+  const dictionaries: ListingDictionaries = {
+    category: {
+      mebleRefId: html.match(/id_kategorii:\s*(\d+)/)?.[1] ?? null,
+      code: category.code,
+      name: category.name,
+      sortOrder: category.sortOrder,
+    },
+    manufacturers: [],
+    decorKinds: [],
+    waterResistances: [],
+    decorTypes: [],
+    shades: [],
+    colors: [],
+    brightnesses: [],
+    collectionStatuses: [],
+  };
+  const seen = new Set<string>();
+  $(".category__sidebar").each((_, element) => {
+    const classes = ($(element).attr("class") ?? "").split(/\s+/);
+    const match = Object.entries(DICTIONARY_GROUPS).find(([group]) => classes.includes(group));
+    if (!match) return;
+    const field = match[1];
+    $(element)
+      .find("div.checkbox")
+      .each((index, box) => {
+        const mebleRefId = $(box).find("input").first().attr("value")?.trim() || null;
+        const name = collapse($(box).find("label").first().attr("title") ?? "");
+        if (!name) return;
+        const key = `${field}:${mebleRefId ?? name}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        const nr = Number($(box).attr("data-nr"));
+        const term: ShopTerm = {
+          mebleRefId,
+          code: englishCode(name),
+          name,
+          sortOrder: Number.isFinite(nr) && nr > 0 ? nr : index + 1,
+        };
+        dictionaries[field].push(term);
+      });
+  });
+  return dictionaries;
 }
 
 export function stylesheetHref(html: string): string | null {

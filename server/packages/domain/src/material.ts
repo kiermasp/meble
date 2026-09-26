@@ -1,10 +1,9 @@
-import { type ShopSectionSlug } from "./shop-catalog";
-
 export interface Material {
   /** meble.pl product id from the listing card data-id. Same value as id_produktu. */
   mebleRefId: string;
   displayName: string;
-  category: ShopSectionSlug;
+  /** English code of the categories row, such as plyty-meblowe. */
+  category: string;
   subtype: string | null;
   manufacturer: string | null;
   decorCode: string | null;

@@ -37,16 +37,16 @@ export class CatalogSyncService implements OnApplicationBootstrap, OnModuleDestr
 
   async sync(): Promise<number> {
     const fetchedAt = new Date();
-    const materials = await this.client.fetchFurnitureBoards(fetchedAt);
-    if (materials.length === 0) {
+    const boards = await this.client.fetchFurnitureBoards(fetchedAt);
+    if (boards.materials.length === 0) {
       throw new Error("Shop catalog parsed to zero variants");
     }
-    await this.store.replaceCategory("plyty-meblowe", materials);
+    await this.store.replaceCategory("plyty-meblowe", boards.materials, boards.dictionaries);
     await this.store.deleteOtherCategories(["plyty-meblowe"]);
-    const edgebands = await this.client.fetchEdgebands(fetchedAt);
-    await this.edgebands.replaceAll(edgebands);
-    this.logger.log(`Upserted ${materials.length} furniture-board variants and ${edgebands.length} edgebands`);
-    return materials.length;
+    const tapes = await this.client.fetchEdgebands(fetchedAt);
+    await this.edgebands.replaceAll(tapes.edgebands, tapes.dictionaries);
+    this.logger.log(`Upserted ${boards.materials.length} furniture-board variants and ${tapes.edgebands.length} edgebands`);
+    return boards.materials.length;
   }
 
   private intervalMs(): number {

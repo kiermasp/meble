@@ -1,12 +1,15 @@
-import { sectionLabel, type Material } from "@meble/domain";
+import type { StoredMaterial } from "./material.mapper";
 
-export function presentMaterial(material: Material) {
+export function presentMaterial(material: StoredMaterial) {
   return {
+    id: material.id,
     mebleRefId: material.mebleRefId,
     displayName: material.displayName,
+    categoryId: material.categoryId,
     category: material.category,
-    categoryLabel: sectionLabel(material.category),
+    categoryLabel: material.categoryLabel,
     subtype: material.subtype,
+    manufacturerId: material.manufacturerId,
     manufacturer: material.manufacturer,
     decorCode: material.decorCode,
     decorName: material.decorName,
@@ -16,6 +19,7 @@ export function presentMaterial(material: Material) {
     availability: material.availability,
     unitPriceAmount: material.unitPriceAmount,
     currency: material.currency,
+    decorKindId: material.decorKindId,
     decorKind: material.decorKind,
     waterResistance: material.waterResistance,
     brightness: material.brightness,

@@ -8,7 +8,7 @@ export function toEdgeband(row: EdgebandRow): Edgeband & { id: string } {
     displayName: row.displayName,
     code: row.code,
     name: row.name,
-    manufacturer: row.manufacturer,
+    manufacturer: row.manufacturer?.name ?? null,
     structure: row.structure,
     widthMm: row.widthMm,
     thicknessMm: row.thicknessMm,

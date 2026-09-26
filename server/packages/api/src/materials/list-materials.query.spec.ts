@@ -23,10 +23,9 @@ describe("ListMaterialsQuery", () => {
     expect(query.category).toBeUndefined();
   });
 
-  it("rejects an unknown category", async () => {
-    await expect(pipe.transform({ category: "rozkroj" }, metadata)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+  it("accepts a category code that is not compiled into the client", async () => {
+    const query = await pipe.transform({ category: "nowa-kategoria" }, metadata);
+    expect(query).toMatchObject({ category: "nowa-kategoria" });
   });
 
   it("rejects query fields the endpoint does not declare", async () => {

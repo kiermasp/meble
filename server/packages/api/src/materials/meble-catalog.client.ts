@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import type { Edgeband, Material } from "@meble/domain";
+import { SHOP_SECTIONS, type Edgeband, type Material } from "@meble/domain";
 import { buildEdgeband } from "../edgebands/build-edgeband";
 import { buildVariant, emptyTags, type VariantTags } from "./build-variant";
 import { mapPool } from "./map-pool";
@@ -13,10 +13,12 @@ import {
   parseDeliveryLabels,
   parseFacetLinks,
   parseListingCards,
+  parseListingDictionaries,
   stylesheetHref,
   type FacetGroup,
   type ListingCard,
 } from "./parse-shop-listing";
+import type { ListingDictionaries } from "../lookups/shop-term";
 
 const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
@@ -35,7 +37,7 @@ export class MebleCatalogClient {
 
   constructor(private readonly config: ConfigService) {}
 
-  async fetchFurnitureBoards(fetchedAt: Date): Promise<Material[]> {
+  async fetchFurnitureBoards(fetchedAt: Date): Promise<{ materials: Material[]; dictionaries: ListingDictionaries }> {
     const base = (this.config.get<string>("MEBLE_BASE_URL") ?? "https://www.meble.pl").replace(/\/$/, "");
     const listingUrl = `${base}/plyty-meblowe/?view=icon`;
     const firstHtml = await this.getText(listingUrl);
@@ -63,10 +65,21 @@ export class MebleCatalogClient {
       return parseProductSpecs(html);
     });
 
-    return cards.map((card, index) => buildVariant(card, specs[index] ?? null, tags.get(card.mebleRefId) ?? emptyTags(), fetchedAt));
+    const materials = cards.map((card, index) =>
+      buildVariant(card, specs[index] ?? null, tags.get(card.mebleRefId) ?? emptyTags(), fetchedAt),
+    );
+    const section = SHOP_SECTIONS.find((item) => item.slug === "plyty-meblowe");
+    return {
+      materials,
+      dictionaries: parseListingDictionaries(firstHtml, {
+        code: "plyty-meblowe",
+        name: section?.label ?? "Płyty meblowe",
+        sortOrder: section ? SHOP_SECTIONS.indexOf(section) + 1 : 1,
+      }),
+    };
   }
 
-  async fetchEdgebands(fetchedAt: Date): Promise<Edgeband[]> {
+  async fetchEdgebands(fetchedAt: Date): Promise<{ edgebands: Edgeband[]; dictionaries: ListingDictionaries }> {
     const base = (this.config.get<string>("MEBLE_BASE_URL") ?? "https://www.meble.pl").replace(/\/$/, "");
     const listingUrl = `${base}/obrzeza/?view=icon`;
     const firstHtml = await this.getText(listingUrl);
@@ -90,7 +103,15 @@ export class MebleCatalogClient {
     if (priced === 0) {
       throw new Error("Edgeband listing did not include any prices");
     }
-    return cards.map((card) => buildEdgeband(card, fetchedAt));
+    const section = SHOP_SECTIONS.find((item) => item.slug === "obrzeza");
+    return {
+      edgebands: cards.map((card) => buildEdgeband(card, fetchedAt)),
+      dictionaries: parseListingDictionaries(firstHtml, {
+        code: "obrzeza",
+        name: section?.label ?? "Obrzeża",
+        sortOrder: section ? SHOP_SECTIONS.indexOf(section) + 1 : 3,
+      }),
+    };
   }
 
   private async deliveryLabels(base: string, listingHtml: string): Promise<Map<string, string>> {

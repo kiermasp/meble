@@ -1,4 +1,5 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { CategoryRow, ManufacturerRow } from "../lookups/lookup.rows";
 
 @Entity({ name: "edgebands" })
 @Index(["mebleRefId"], { unique: true })
@@ -12,14 +13,27 @@ export class EdgebandRow {
   @Column({ name: "display_name", type: "text" })
   displayName!: string;
 
+  @Index()
+  @Column({ name: "category_id", type: "uuid" })
+  categoryId!: string;
+
+  @ManyToOne(() => CategoryRow, { nullable: false, onDelete: "RESTRICT" })
+  @JoinColumn({ name: "category_id" })
+  category!: CategoryRow;
+
   @Column({ type: "text", nullable: true })
   code!: string | null;
 
   @Column({ type: "text", nullable: true })
   name!: string | null;
 
-  @Column({ type: "text", nullable: true })
-  manufacturer!: string | null;
+  @Index()
+  @Column({ name: "manufacturer_id", type: "uuid", nullable: true })
+  manufacturerId!: string | null;
+
+  @ManyToOne(() => ManufacturerRow, { nullable: true, onDelete: "RESTRICT" })
+  @JoinColumn({ name: "manufacturer_id" })
+  manufacturer!: ManufacturerRow | null;
 
   @Column({ type: "text", nullable: true })
   structure!: string | null;
