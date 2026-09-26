@@ -7,7 +7,8 @@ Local furniture-board catalog in front of meble.pl, plus the SketchUp bridge in 
 ## Układ / Layout
 
 - `sketchup_chat_bridge` — pliki mostka, zwykła część tego repozytorium. Osobne repozytorium [kiermasp/sketchup-chat-bridge](https://github.com/kiermasp/sketchup-chat-bridge) zostaje na GitHubie i nie jest już lokalnym klonem.
-- `server` — monorepo npm: `packages/domain` (typy) i `apps/api` (NestJS).
+- `server/packages/domain` — typy domenowe, bez Nest, HTTP i ORM.
+- `server/packages/api` — aplikacja NestJS. Każdy endpoint przyjmuje i zwraca tylko `application/json`.
 - `docker-compose.yml` — Postgres i API. Uruchamiaj z tego katalogu.
 
 The live plugin in `~/Documents/ChatGPT/sketchup api` is a different copy.
@@ -31,9 +32,15 @@ docker compose up -d --build
 
 API nasłuchuje na porcie **3010** (w kontenerze 3000). Po starcie proces od razu pobiera płyty i zapisuje je w Postgresie, potem powtarza to co 3 godziny od startu procesu (interwał, nie cron).
 
+API wystawia wyłącznie JSON (`Content-Type: application/json`):
+
+- `GET /health` — `{ "status": "ok", "materials": <liczba> }`
+- `GET /materials` — lista płyt
+- `GET /materials?category=plyty-meblowe` — jedna kategoria
+
 ```bash
-curl http://127.0.0.1:3010/health
-curl "http://127.0.0.1:3010/materials?category=plyty-meblowe"
+curl -H 'Accept: application/json' http://127.0.0.1:3010/health
+curl -H 'Accept: application/json' "http://127.0.0.1:3010/materials?category=plyty-meblowe"
 ```
 
 Źródło: `POST https://www.meble.pl/rozkroj/go/ajaxRequest,showDialogPlyta` z treścią `nr=1&id=0&zakladka=plyty-meblowe&plytyId=0,0`. Odpowiedź to HTML. Jedno wywołanie zawiera zakładki: Płyta meblowa, Płyta akrylowa, Wysoki połysk, Głęboki mat, Rauvisio Crystal, TSS Cleaf, HDF, Rauvisio Grip.
