@@ -12,6 +12,10 @@ module.exports = {
           experimentalDecorators: true,
           emitDecoratorMetadata: true,
           strict: true,
+          baseUrl: ".",
+          paths: {
+            "@meble/domain": ["../../packages/domain/src/index.ts"],
+          },
         },
       },
     ],
