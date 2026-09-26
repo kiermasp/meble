@@ -3,9 +3,23 @@ export interface CatalogBoard {
   displayName: string;
   category: string;
   categoryLabel: string;
+  subtype: string | null;
   manufacturer: string | null;
+  decorCode: string | null;
+  decorName: string | null;
+  structure: string | null;
   thicknessMm: number | null;
-  availability: string;
+  format: string | null;
+  availability: string | null;
+  unitPriceAmount: number | null;
+  currency: string | null;
+  decorKind: string | null;
+  waterResistance: string | null;
+  brightness: string | null;
+  decorType: string | null;
+  shade: string | null;
+  color: string | null;
+  statuses: string[];
 }
 
 export function isCatalogBoard(value: unknown): value is CatalogBoard {
@@ -16,8 +30,31 @@ export function isCatalogBoard(value: unknown): value is CatalogBoard {
     typeof row.displayName === "string" &&
     typeof row.category === "string" &&
     typeof row.categoryLabel === "string" &&
-    (row.manufacturer === null || typeof row.manufacturer === "string") &&
-    (row.thicknessMm === null || typeof row.thicknessMm === "number") &&
-    typeof row.availability === "string"
+    nullableString(row.subtype) &&
+    nullableString(row.manufacturer) &&
+    nullableString(row.decorCode) &&
+    nullableString(row.decorName) &&
+    nullableString(row.structure) &&
+    nullableNumber(row.thicknessMm) &&
+    nullableString(row.format) &&
+    nullableString(row.availability) &&
+    nullableNumber(row.unitPriceAmount) &&
+    nullableString(row.currency) &&
+    nullableString(row.decorKind) &&
+    nullableString(row.waterResistance) &&
+    nullableString(row.brightness) &&
+    nullableString(row.decorType) &&
+    nullableString(row.shade) &&
+    nullableString(row.color) &&
+    Array.isArray(row.statuses) &&
+    row.statuses.every((status) => typeof status === "string")
   );
+}
+
+function nullableString(value: unknown): boolean {
+  return value === null || typeof value === "string";
+}
+
+function nullableNumber(value: unknown): boolean {
+  return value === null || typeof value === "number";
 }

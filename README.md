@@ -1,6 +1,6 @@
 # meble
 
-Lokalny katalog płyt z [meble.pl](https://www.meble.pl/rozkroj,plyty-meblowe) oraz mostek SketchUp w tym samym repozytorium.
+Lokalny katalog płyt z [meble.pl](https://www.meble.pl/plyty-meblowe/?view=icon) oraz mostek SketchUp w tym samym repozytorium.
 
 Local furniture-board catalog in front of meble.pl, plus the SketchUp bridge in this same repository.
 
@@ -63,4 +63,4 @@ Parser czyta kartę z listingu sklepu i specyfikację ze strony produktu. Test z
 
 Strona HTML serwowana przez Nest (`server/packages/magazyn`), nie przez API. API zostaje wyłącznie JSON. Po `docker compose up -d --build` strona jest na http://localhost:3011.
 
-Filtry kategorii i dostępności idą w query stringu. Nagłówki po polsku: Kod, Nazwa, Producent, Grubość, Kategoria, Dostępność. Dostępność: na magazynie, na zamówienie, na zamówienie — paleta.
+Boczny panel filtruje warianty: Producenci, Grubość, Struktura, Rodzaj dekoru, Format, Wodoodporność, a także Jasność, Typ dekoru, Odcień, Kolor i Status, gdy katalog je ma. Każdy dekor jest blokiem z wierszami Grubość, Struktura, Dostępność i Cena/szt. Warianty produkcyjne są pod osobnym nagłówkiem „Warianty na zamówienie”.

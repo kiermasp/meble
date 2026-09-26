@@ -17,20 +17,13 @@ export class WarehouseController {
   async show(@Query() query: WarehouseQuery, @Res() response: Response): Promise<void> {
     try {
       const boards = await this.catalog.list();
-      response.status(200).type("html").send(
-        renderWarehousePage({
-          boards,
-          category: query.category,
-          availability: query.availability,
-        }),
-      );
+      response.status(200).type("html").send(renderWarehousePage({ boards, filters: query }));
     } catch (error) {
       if (!(error instanceof CatalogUnavailableError)) throw error;
       response.status(200).type("html").send(
         renderWarehousePage({
           boards: [],
-          category: query.category,
-          availability: query.availability,
+          filters: query,
           error: "Nie udało się pobrać katalogu.",
         }),
       );
