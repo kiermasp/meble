@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "db:sync": "node dist/cutting-orders/sync-schema.js"
   },
   "dependencies": {
     "@meble/domain": "*",
