@@ -5,13 +5,10 @@ import {
   IsArray,
   IsIn,
   IsInt,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsString,
   IsUUID,
   Max,
-  MaxLength,
   Min,
   ValidateNested,
   registerDecorator,
@@ -47,12 +44,9 @@ export class PieceEdgeDto {
   })
   side!: (typeof EDGE_SIDES)[number];
 
-  /** Kod obrzeża z katalogu. Puste, gdy bok zostaje bez okleiny. */
-  @IsOptional()
-  @IsString({ message: "Odwołanie obrzeża (materialReference) musi być tekstem." })
-  @IsNotEmpty({ message: "Odwołanie obrzeża (materialReference) nie może być puste." })
-  @MaxLength(120, { message: "Odwołanie obrzeża (materialReference) jest za długie." })
-  materialReference?: string | null;
+  /** Identyfikator wiersza edgebands. Każde obrzeże wskazuje kupowaną taśmę. */
+  @IsUUID("4", { message: "Identyfikator obrzeża (edgebandId) musi być UUID z katalogu edgebands." })
+  edgebandId!: string;
 
   /** Grubość obrzeża w milimetrach. */
   @IsOptional()

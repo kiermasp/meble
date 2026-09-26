@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { EdgebandRow } from "../edgebands/edgeband.row";
 import { MaterialRow } from "../materials/material.row";
 import { numericColumn } from "./numeric";
 
@@ -99,8 +100,13 @@ export class PieceEdgeRow {
   @Column({ type: "text" })
   side!: string;
 
-  @Column({ name: "material_reference", type: "text", nullable: true })
-  materialReference!: string | null;
+  @Index()
+  @Column({ name: "edgeband_id", type: "uuid" })
+  edgebandId!: string;
+
+  @ManyToOne(() => EdgebandRow, { nullable: false, onDelete: "RESTRICT", onUpdate: "NO ACTION" })
+  @JoinColumn({ name: "edgeband_id" })
+  edgeband!: EdgebandRow;
 
   @Column(numericColumn("thickness_mm", 5, 2, true))
   thicknessMm!: number | null;

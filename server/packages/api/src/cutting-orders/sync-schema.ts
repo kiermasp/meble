@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
+import { EdgebandRow } from "../edgebands/edgeband.row";
 import { MaterialRow } from "../materials/material.row";
 import { CUTTING_ORDER_ENTITIES } from "./cutting-order.rows";
 
@@ -12,7 +13,7 @@ async function main(): Promise<void> {
   const dataSource = new DataSource({
     type: "postgres",
     url,
-    entities: [MaterialRow, ...CUTTING_ORDER_ENTITIES],
+    entities: [MaterialRow, EdgebandRow, ...CUTTING_ORDER_ENTITIES],
     synchronize: true,
     dropSchema: false,
   });

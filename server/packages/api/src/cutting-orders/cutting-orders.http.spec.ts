@@ -4,6 +4,7 @@ import { NestFactory } from "@nestjs/core";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
 import { configureHttp } from "../configure-http";
+import { EdgebandRow } from "../edgebands/edgeband.row";
 import { MaterialRow } from "../materials/material.row";
 import { CuttingOrdersModule } from "./cutting-orders.module";
 import { CUTTING_ORDER_ENTITIES } from "./cutting-order.rows";
@@ -11,9 +12,9 @@ import { CUTTING_ORDER_ENTITIES } from "./cutting-order.rows";
 const adminUrl = process.env.TEST_DATABASE_URL ?? "postgres://meble:meble@127.0.0.1:5432/meble";
 const testUrl = adminUrl.replace(/\/[^/?]+(\?|$)/, "/meble_test$1");
 
-const ENTITIES = [MaterialRow, ...CUTTING_ORDER_ENTITIES];
+const ENTITIES = [MaterialRow, EdgebandRow, ...CUTTING_ORDER_ENTITIES];
 
-function piece(materialId: string, overrides: Record<string, unknown> = {}) {
+function piece(materialId: string, edgebandId: string, overrides: Record<string, unknown> = {}) {
   return {
     widthMm: 600,
     heightMm: 720,
@@ -22,8 +23,8 @@ function piece(materialId: string, overrides: Record<string, unknown> = {}) {
     materialId,
     grain: "along-length",
     edges: [
-      { side: "top", materialReference: "W960-ABS-1", thicknessMm: 1 },
-      { side: "left", materialReference: null, thicknessMm: null },
+      { side: "top", edgebandId, thicknessMm: 0.8 },
+      { side: "left", edgebandId, thicknessMm: null },
     ],
     holes: [
       { xMm: 37, yMm: 37, diameterMm: 5, depthMm: 12 },
@@ -51,6 +52,7 @@ describe("parked cutting orders", () => {
   let base: string;
   let boardA = "";
   let boardB = "";
+  let tapeId = "";
 
   beforeAll(async () => {
     const admin = new DataSource({ type: "postgres", url: adminUrl });
@@ -78,13 +80,27 @@ describe("parked cutting orders", () => {
     );
     boardA = inserted[0]?.id ?? "";
     boardB = inserted[1]?.id ?? "";
-    const foreignKeys: { definition: string }[] = await schema.query(
+    const tapes: { id: string }[] = await schema.query(
+      `INSERT INTO edgebands (external_code, display_name, code, name, manufacturer, width_mm, thickness_mm, unit_price_amount, currency, availability, fetched_at)
+       VALUES ('1050019', 'Obrzeże ABS U702 ST9 Kaszmir 23 x 0.8 mm EGGER', 'U702', 'Kaszmir', 'Egger', 23, 0.8, 1.67, 'PLN', '24h', now())
+       RETURNING id`,
+    );
+    tapeId = tapes[0]?.id ?? "";
+    const pieceKeys: { definition: string }[] = await schema.query(
       `SELECT pg_get_constraintdef(oid) AS definition
        FROM pg_constraint
        WHERE contype = 'f' AND conrelid = 'cutting_pieces'::regclass`,
     );
-    expect(foreignKeys.map((row) => row.definition).join("\n")).toContain(
+    expect(pieceKeys.map((row) => row.definition).join("\n")).toContain(
       "FOREIGN KEY (material_id) REFERENCES materials(id) ON DELETE RESTRICT",
+    );
+    const edgeKeys: { definition: string }[] = await schema.query(
+      `SELECT pg_get_constraintdef(oid) AS definition
+       FROM pg_constraint
+       WHERE contype = 'f' AND conrelid = 'piece_edges'::regclass`,
+    );
+    expect(edgeKeys.map((row) => row.definition).join("\n")).toContain(
+      "FOREIGN KEY (edgeband_id) REFERENCES edgebands(id) ON DELETE RESTRICT",
     );
     await schema.destroy();
 
@@ -112,7 +128,7 @@ describe("parked cutting orders", () => {
   }
 
   it("creates, reads, and replaces a parked order without leaving the database", async () => {
-    const created = await send("POST", "/cutting-orders", { pieces: [piece(boardA)] });
+    const created = await send("POST", "/cutting-orders", { pieces: [piece(boardA, tapeId)] });
     expect(created.status).toBe(201);
     expect(created.contentType).toContain("application/json");
     const order = created.payload as {
@@ -153,7 +169,7 @@ describe("parked cutting orders", () => {
     await new Promise((resolve) => setTimeout(resolve, 20));
     const updated = await send("PATCH", `/cutting-orders/${order.id}`, {
       pieces: [
-        piece(boardB, {
+        piece(boardB, tapeId, {
           widthMm: 400,
           heightMm: 500,
           thicknessMm: 18,
@@ -186,12 +202,12 @@ describe("parked cutting orders", () => {
 
   it("rejects a grain outside the contract and an unknown id", async () => {
     const invalid = await send("POST", "/cutting-orders", {
-      pieces: [piece(boardA, { grain: "wzdłuż" })],
+      pieces: [piece(boardA, tapeId, { grain: "wzdłuż" })],
     });
     expect(invalid.status).toBe(400);
     expect(JSON.stringify(invalid.payload)).toContain("Usłojenie (grain)");
 
-    const extra = await send("POST", "/cutting-orders", { pieces: [piece(boardA)], status: "sent" });
+    const extra = await send("POST", "/cutting-orders", { pieces: [piece(boardA, tapeId)], status: "sent" });
     expect(extra.status).toBe(400);
     expect(JSON.stringify(extra.payload)).toContain("Pole status nie jest dozwolone.");
 
@@ -204,13 +220,19 @@ describe("parked cutting orders", () => {
     expect(JSON.stringify(badId.payload)).toContain("UUID");
 
     const unknownBoard = await send("POST", "/cutting-orders", {
-      pieces: [piece("00000000-0000-4000-8000-000000000099")],
+      pieces: [piece("00000000-0000-4000-8000-000000000099", tapeId)],
     });
     expect(unknownBoard.status).toBe(400);
     expect(JSON.stringify(unknownBoard.payload)).toContain("Nie ma płyty o identyfikatorze");
 
+    const unknownTape = await send("POST", "/cutting-orders", {
+      pieces: [piece(boardA, "00000000-0000-4000-8000-000000000088")],
+    });
+    expect(unknownTape.status).toBe(400);
+    expect(JSON.stringify(unknownTape.payload)).toContain("Nie ma obrzeża o identyfikatorze");
+
     const looseCode = await send("POST", "/cutting-orders", {
-      pieces: [piece(boardA, { materialReference: "1039757" })],
+      pieces: [piece(boardA, tapeId, { materialReference: "1039757" })],
     });
     expect(looseCode.status).toBe(400);
     expect(JSON.stringify(looseCode.payload)).toContain("Pole materialReference nie jest dozwolone.");
@@ -219,10 +241,10 @@ describe("parked cutting orders", () => {
   it("rejects two edges on the same side", async () => {
     const invalid = await send("POST", "/cutting-orders", {
       pieces: [
-        piece(boardA, {
+        piece(boardA, tapeId, {
           edges: [
-            { side: "top", materialReference: "A", thicknessMm: 1 },
-            { side: "top", materialReference: "B", thicknessMm: 1 },
+            { side: "top", edgebandId: tapeId, thicknessMm: 1 },
+            { side: "top", edgebandId: tapeId, thicknessMm: 1 },
           ],
         }),
       ],

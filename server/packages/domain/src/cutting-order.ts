@@ -16,7 +16,8 @@ export type EdgeSide = (typeof EDGE_SIDES)[number];
 export interface PieceEdge {
   id: string;
   side: EdgeSide;
-  materialReference: string | null;
+  /** edgebands.id of one purchasable tape. */
+  edgebandId: string;
   thicknessMm: number | null;
 }
 
@@ -57,7 +58,7 @@ export interface CuttingOrder {
 
 export interface PieceEdgeDraft {
   side: EdgeSide;
-  materialReference: string | null;
+  edgebandId: string;
   thicknessMm: number | null;
 }
 

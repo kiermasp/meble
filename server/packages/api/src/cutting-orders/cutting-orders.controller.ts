@@ -12,7 +12,7 @@ import {
 } from "@nestjs/common";
 import { CuttingOrderBodyDto } from "./cutting-order.dto";
 import { presentCuttingOrder, toDraft } from "./cutting-order.presenter";
-import { CuttingOrderStore, UnknownMaterialError } from "./cutting-order.store";
+import { CuttingOrderStore, UnknownEdgebandError, UnknownMaterialError } from "./cutting-order.store";
 
 const MISSING = "Nie ma zaparkowanego rozkroju o tym identyfikatorze.";
 
@@ -31,7 +31,7 @@ export class CuttingOrdersController {
       const order = await this.orders.create(toDraft(body));
       return presentCuttingOrder(order);
     } catch (error) {
-      this.rethrowUnknownMaterial(error);
+      this.rethrowUnknownReference(error);
     }
   }
 
@@ -55,13 +55,16 @@ export class CuttingOrdersController {
       if (!order) throw new NotFoundException(MISSING);
       return presentCuttingOrder(order);
     } catch (error) {
-      this.rethrowUnknownMaterial(error);
+      this.rethrowUnknownReference(error);
     }
   }
 
-  private rethrowUnknownMaterial(error: unknown): never {
+  private rethrowUnknownReference(error: unknown): never {
     if (error instanceof UnknownMaterialError) {
       throw new BadRequestException(`Nie ma płyty o identyfikatorze ${error.materialId}.`);
+    }
+    if (error instanceof UnknownEdgebandError) {
+      throw new BadRequestException(`Nie ma obrzeża o identyfikatorze ${error.edgebandId}.`);
     }
     throw error;
   }

@@ -49,7 +49,7 @@ function toEdge(row: PieceEdgeRow): PieceEdge {
   return {
     id: row.id,
     side: row.side,
-    materialReference: row.materialReference,
+    edgebandId: row.edgebandId,
     thicknessMm: row.thicknessMm,
   };
 }
