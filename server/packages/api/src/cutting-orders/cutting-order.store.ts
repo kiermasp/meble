@@ -42,8 +42,12 @@ export class CuttingOrderStore {
         return row;
       });
       if (pieces.length > 0) await manager.save(CuttingPieceRow, pieces);
-      existing.status = "parked";
-      await manager.save(CuttingOrderRow, existing);
+      await manager
+        .createQueryBuilder()
+        .update(CuttingOrderRow)
+        .set({ status: "parked", updatedAt: () => "now()" })
+        .where("id = :id", { id })
+        .execute();
       const loaded = await manager.findOne(CuttingOrderRow, {
         where: { id },
         relations: ORDER_RELATIONS,
