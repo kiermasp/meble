@@ -8,7 +8,7 @@ COPY packages/domain/package.json packages/domain/package.json
 RUN npm ci
 
 COPY . .
-RUN npm run build
+RUN find . -name '*.tsbuildinfo' -delete && npm run build
 
 ENV NODE_ENV=production
 EXPOSE 3000

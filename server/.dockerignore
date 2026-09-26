@@ -3,5 +3,5 @@ node_modules
 .git
 .env
 coverage
-*.tsbuildinfo
+**/*.tsbuildinfo
 *.log
