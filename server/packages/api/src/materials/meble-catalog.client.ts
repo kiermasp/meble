@@ -6,6 +6,8 @@ import { mapPool } from "./map-pool";
 import { parseProductSpecs } from "./parse-product-page";
 import {
   listingPageCount,
+  listingPageStyle,
+  listingPageUrl,
   parseDeliveryLabels,
   parseFacetLinks,
   parseListingCards,
@@ -37,12 +39,13 @@ export class MebleCatalogClient {
     const firstHtml = await this.getText(listingUrl);
     const labels = await this.deliveryLabels(base, firstHtml);
     const pages = listingPageCount(firstHtml);
+    const pageStyle = listingPageStyle(firstHtml);
     const pageHtml = [firstHtml];
     if (pages > 1) {
       const rest = await mapPool(
         Array.from({ length: pages - 1 }, (_, index) => index + 2),
         4,
-        (page) => this.getText(pageUrl(listingUrl, page)),
+        (page) => this.getText(listingPageUrl(listingUrl, page, pageStyle)),
       );
       pageHtml.push(...rest);
     }
@@ -83,12 +86,13 @@ export class MebleCatalogClient {
       const url = absoluteUrl(base, link.href);
       const first = await this.getText(withIconView(url));
       const pages = listingPageCount(first);
+      const pageStyle = listingPageStyle(first);
       const htmls = [first];
       if (pages > 1) {
         const rest = await mapPool(
           Array.from({ length: pages - 1 }, (_, index) => index + 2),
           3,
-          (page) => this.getText(pageUrl(withIconView(url), page)),
+          (page) => this.getText(listingPageUrl(withIconView(url), page, pageStyle)),
         );
         htmls.push(...rest);
       }
@@ -151,10 +155,3 @@ function withIconView(url: string): string {
   return parsed.toString();
 }
 
-function pageUrl(url: string, page: number): string {
-  const parsed = new URL(url);
-  const path = parsed.pathname.replace(/\/$/, "").replace(/\/page\/page\d+\.html$/, "");
-  parsed.pathname = page <= 1 ? `${path}/` : `${path}/page/page${page}.html`;
-  parsed.searchParams.set("view", "icon");
-  return parsed.toString();
-}

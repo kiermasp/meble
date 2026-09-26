@@ -1,6 +1,13 @@
 import { parseBoardTitle } from "./parse-board-title";
 import { parseProductSpecs } from "./parse-product-page";
-import { deliveryLabel, parseDeliveryLabels, parseListingCards } from "./parse-shop-listing";
+import {
+  deliveryLabel,
+  listingPageCount,
+  listingPageStyle,
+  listingPageUrl,
+  parseDeliveryLabels,
+  parseListingCards,
+} from "./parse-shop-listing";
 
 const CSS = `
 .productItem__delivery.d1::after{content:'24h'}
@@ -91,6 +98,22 @@ describe("shop catalog parsers", () => {
       format: "2800x1032",
       thicknessMm: 36,
     });
+  });
+
+  it("follows both shop pagination styles", () => {
+    const directory = '<a href="/plyty-meblowe/page/page8.html?view=icon"></a>';
+    expect(listingPageCount(directory)).toBe(8);
+    expect(listingPageStyle(directory)).toBe("directory");
+    expect(listingPageUrl("https://www.meble.pl/plyty-meblowe/?view=icon", 3, "directory")).toBe(
+      "https://www.meble.pl/plyty-meblowe/page/page3.html?view=icon",
+    );
+
+    const suffix = '<a href="/plyty-meblowe/magazynowe/page6.html?view=icon"></a>';
+    expect(listingPageCount(suffix)).toBe(6);
+    expect(listingPageStyle(suffix)).toBe("suffix");
+    expect(listingPageUrl("https://www.meble.pl/plyty-meblowe/magazynowe/?view=icon", 2, "suffix")).toBe(
+      "https://www.meble.pl/plyty-meblowe/magazynowe/page2.html?view=icon",
+    );
   });
 
   it("reads the product-page specification, not the other thicknesses", () => {

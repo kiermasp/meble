@@ -106,13 +106,33 @@ export function parseListingCards(html: string, labels: Map<string, string>): Li
   return cards;
 }
 
+export type ListingPageStyle = "directory" | "suffix";
+
 export function listingPageCount(html: string): number {
   let max = 1;
-  for (const match of html.matchAll(/page\/page(\d+)\.html/g)) {
+  for (const match of html.matchAll(/\/page(\d+)\.html/g)) {
     const page = Number(match[1]);
     if (Number.isFinite(page)) max = Math.max(max, page);
   }
   return max;
+}
+
+/** Main catalog pages use /page/pageN.html. Facet listings use /pageN.html. */
+export function listingPageStyle(html: string): ListingPageStyle {
+  return /\/page\/page\d+\.html/.test(html) ? "directory" : "suffix";
+}
+
+export function listingPageUrl(url: string, page: number, style: ListingPageStyle): string {
+  const parsed = new URL(url);
+  const path = parsed.pathname
+    .replace(/\/$/, "")
+    .replace(/\/page\/page\d+\.html$/, "")
+    .replace(/\/page\d+\.html$/, "");
+  if (page <= 1) parsed.pathname = `${path}/`;
+  else if (style === "directory") parsed.pathname = `${path}/page/page${page}.html`;
+  else parsed.pathname = `${path}/page${page}.html`;
+  parsed.searchParams.set("view", "icon");
+  return parsed.toString();
 }
 
 export function parseFacetLinks(html: string): FacetLink[] {
