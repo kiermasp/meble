@@ -10,6 +10,7 @@ Local furniture-board catalog in front of meble.pl, plus the SketchUp bridge in 
 - `server/packages/domain` — typy domenowe, bez Nest, HTTP i ORM.
 - `server/packages/api` — aplikacja NestJS. Każdy endpoint przyjmuje i zwraca tylko `application/json`.
 - `server/packages/magazyn` — aplikacja React (Vite, Material UI). Czyta JSON z API.
+- `server/packages/schema` — aplikacja NestJS. Serwuje stronę HTML schematu bazy i JSON grafu relacji. Czyta Postgresa z compose, bez drugiej bazy.
 - `docker-compose.yml` — Postgres, API i magazyn. Uruchamiaj z tego katalogu.
 
 The live plugin in `~/Documents/ChatGPT/sketchup api` is a different copy.
@@ -72,3 +73,17 @@ Interfejs korzysta z Material UI. Strona płyt (http://localhost:3011/) ma boczn
 Strona obrzeży (http://localhost:3011/obrzeza) wyszukuje po kodzie, nazwie i producencie. Tabela pokazuje kod, nazwę, producenta, szerokość, grubość, dostępność i cenę. Nagłówki kolumn sortują wiersze.
 
 Filtry Kategoria, Producenci i Rodzaj dekoru biorą polskie nazwy i kolejność z tabel słowników. Nowy rodzaj dekoru dopisany w tabeli pojawia się bez zmiany kodu.
+
+## Schemat
+
+Strona HTML serwowana przez Nest (`server/packages/schema`). Czyta bieżący schemat Postgresa z `information_schema` i `pg_catalog`: tabele, pola (nazwa, typ, czy puste), klucze główne, klucze obce i graf relacji. Nie uruchamia drugiej bazy. Łączy się z Postgresem z tego compose, `postgres://meble:meble@127.0.0.1:5432/meble`.
+
+Gdy kontener `meble-postgres-1` już działa:
+
+```bash
+cd ~/github/meble/server
+npm install
+npm run start:schema
+```
+
+Strona: http://127.0.0.1:3012 . JSON grafu: http://127.0.0.1:3012/schema . Domyślny port to **3012** (`PORT` go nadpisuje). Nagłówki po polsku: Tabele, Pola, Relacje.
