@@ -14,14 +14,14 @@ module.exports = {
           strict: true,
           baseUrl: ".",
           paths: {
-            "@meble/domain": ["../../packages/domain/src/index.ts"],
+            "@meble/domain": ["../domain/src/index.ts"],
           },
         },
       },
     ],
   },
   moduleNameMapper: {
-    "^@meble/domain$": "<rootDir>/../../../packages/domain/src/index.ts",
+    "^@meble/domain$": "<rootDir>/../../domain/src/index.ts",
   },
   testEnvironment: "node",
   testTimeout: 30000,

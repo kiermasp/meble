@@ -2,7 +2,6 @@
   "name": "meble-server",
   "private": true,
   "workspaces": [
-    "apps/*",
     "packages/*"
   ],
   "scripts": {
