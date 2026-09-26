@@ -5,6 +5,7 @@ import { buildEdgeband } from "../edgebands/build-edgeband";
 import { buildVariant, emptyTags, type VariantTags } from "./build-variant";
 import { mapPool } from "./map-pool";
 import { parseProductSpecs } from "./parse-product-page";
+import { shopRetryDelayMs } from "./shop-retry";
 import {
   listingPageCount,
   listingPageStyle,
@@ -76,7 +77,7 @@ export class MebleCatalogClient {
     if (pages > 1) {
       const rest = await mapPool(
         Array.from({ length: pages - 1 }, (_, index) => index + 2),
-        4,
+        1,
         (page) => this.getText(listingPageUrl(listingUrl, page, pageStyle)),
       );
       pageHtml.push(...rest);
@@ -137,7 +138,7 @@ export class MebleCatalogClient {
 
   private async getText(url: string): Promise<string> {
     let lastError: unknown;
-    for (let attempt = 0; attempt < 3; attempt += 1) {
+    for (let attempt = 0; attempt < 6; attempt += 1) {
       try {
         const response = await fetch(url, {
           headers: {
@@ -146,12 +147,20 @@ export class MebleCatalogClient {
           },
           signal: AbortSignal.timeout(45_000),
         });
+        const retryMs = shopRetryDelayMs(response.status, response.headers.get("retry-after"), attempt);
+        if (retryMs != null) {
+          lastError = new Error(`${url} failed with HTTP ${response.status}`);
+          this.logger.warn(`Shop responded ${response.status}; retrying ${url} in ${retryMs} ms`);
+          await delay(retryMs);
+          continue;
+        }
         if (!response.ok) {
           throw new Error(`${url} failed with HTTP ${response.status}`);
         }
         return await response.text();
       } catch (error) {
         lastError = error;
+        if (attempt < 5) await delay(1_000 * (attempt + 1));
       }
     }
     throw lastError instanceof Error ? lastError : new Error(`Failed to fetch ${url}`);
@@ -181,5 +190,9 @@ function withIconView(url: string): string {
   const parsed = new URL(url);
   parsed.searchParams.set("view", "icon");
   return parsed.toString();
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 

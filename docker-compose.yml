@@ -46,7 +46,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 36
-      start_period: 300s
+      start_period: 600s
 
   magazyn:
     image: meble-server:local
