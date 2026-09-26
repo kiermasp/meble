@@ -9,8 +9,8 @@ Local furniture-board catalog in front of meble.pl, plus the SketchUp bridge in 
 - `sketchup_chat_bridge` — pliki mostka, zwykła część tego repozytorium. Osobne repozytorium [kiermasp/sketchup-chat-bridge](https://github.com/kiermasp/sketchup-chat-bridge) zostaje na GitHubie i nie jest już lokalnym klonem.
 - `server/packages/domain` — typy domenowe, bez Nest, HTTP i ORM.
 - `server/packages/api` — aplikacja NestJS. Każdy endpoint przyjmuje i zwraca tylko `application/json`.
-- `magazyn` — strona Vite, osobny proces. Czyta JSON z API, nie jest serwowana przez Nest.
-- `docker-compose.yml` — Postgres i API. Uruchamiaj z tego katalogu.
+- `server/packages/magazyn` — aplikacja NestJS. Serwuje stronę HTML magazynu i czyta JSON z API.
+- `docker-compose.yml` — Postgres, API i magazyn. Uruchamiaj z tego katalogu.
 
 The live plugin in `~/Documents/ChatGPT/sketchup api` is a different copy.
 
@@ -31,7 +31,7 @@ Z katalogu `~/github/meble`:
 docker compose up -d --build
 ```
 
-API nasłuchuje na porcie **3010** (w kontenerze 3000). Po starcie proces od razu pobiera płyty i zapisuje je w Postgresie, potem powtarza to co 3 godziny od startu procesu (interwał, nie cron).
+API nasłuchuje na porcie **3010** (w kontenerze 3000). Magazyn nasłuchuje na porcie **3011** (w kontenerze 3000) i woła API pod `http://api:3000`. Po starcie API od razu pobiera płyty i zapisuje je w Postgresie, potem powtarza to co 3 godziny od startu procesu (interwał, nie cron).
 
 API wystawia wyłącznie JSON (`Content-Type: application/json`):
 
@@ -63,12 +63,6 @@ Parser czyta prawdziwą odpowiedź `showDialogPlyta`. Drugi test sprawdza, że p
 
 ## Magazyn
 
-Osobna strona, poza serwerem API. Domyślny adres API to `http://localhost:3010` (`VITE_API_BASE_URL`).
+Strona HTML serwowana przez Nest (`server/packages/magazyn`), nie przez API. API zostaje wyłącznie JSON. Po `docker compose up -d --build` strona jest na http://localhost:3011.
 
-```bash
-cd ~/github/meble/magazyn
-npm install
-npm run dev
-```
-
-Strona jest na http://localhost:5173.
+Filtry kategorii i dostępności idą w query stringu. Nagłówki po polsku: Kod, Nazwa, Producent, Grubość, Kategoria, Dostępność. Dostępność: na magazynie, na zamówienie, na zamówienie — paleta.
