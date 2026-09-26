@@ -21,6 +21,7 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+    image: meble-server:local
     depends_on:
       postgres:
         condition: service_healthy
@@ -33,6 +34,7 @@ services:
     ports:
       - "3010:3000"
     restart: unless-stopped
+    command: ["node", "packages/api/dist/main.js"]
     healthcheck:
       test:
         [
@@ -45,6 +47,31 @@ services:
       timeout: 5s
       retries: 36
       start_period: 30s
+
+  magazyn:
+    image: meble-server:local
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      API_BASE_URL: http://api:3000
+      PORT: "3000"
+    ports:
+      - "3011:3000"
+    restart: unless-stopped
+    command: ["node", "packages/magazyn/dist/main.js"]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/health').then((response)=>process.exit(response.ok && (response.headers.get('content-type')||'').includes('text/html')?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
 
 volumes:
   meble_pg:
