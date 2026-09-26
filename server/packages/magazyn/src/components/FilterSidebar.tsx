@@ -1,0 +1,67 @@
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import Chip from "@mui/material/Chip";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormGroup from "@mui/material/FormGroup";
+import Typography from "@mui/material/Typography";
+import { FILTER_GROUPS, filterOptions, type CatalogBoard, type WarehouseFilters } from "../catalog";
+
+const OPEN_BY_DEFAULT = new Set<keyof WarehouseFilters>([
+  "manufacturer",
+  "thickness",
+  "structure",
+  "decorKind",
+  "format",
+  "waterResistance",
+]);
+
+export function FilterSidebar(props: {
+  boards: CatalogBoard[];
+  filters: WarehouseFilters;
+  onToggle: (name: keyof WarehouseFilters, value: string) => void;
+  onClear: () => void;
+}) {
+  const active = FILTER_GROUPS.some((group) => (props.filters[group.name] ?? []).length > 0);
+  return (
+    <Box sx={{ px: 1, pb: 2 }}>
+      <Button variant="text" onClick={props.onClear} disabled={!active} fullWidth sx={{ mb: 1, justifyContent: "flex-start" }}>
+        Wyczyść filtry
+      </Button>
+      {FILTER_GROUPS.map((group) => {
+        const values = filterOptions(props.boards, group);
+        if (values.length === 0) return null;
+        const selected = props.filters[group.name] ?? [];
+        return (
+          <Accordion key={group.name} disableGutters defaultExpanded={OPEN_BY_DEFAULT.has(group.name)}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography sx={{ flex: 1 }}>{group.label}</Typography>
+              {selected.length > 0 ? <Chip size="small" color="primary" label={selected.length} /> : null}
+            </AccordionSummary>
+            <AccordionDetails sx={{ pt: 0 }}>
+              <FormGroup sx={{ maxHeight: 220, overflow: "auto", flexWrap: "nowrap" }}>
+                {values.map((value) => (
+                  <FormControlLabel
+                    key={value}
+                    control={
+                      <Checkbox
+                        size="small"
+                        checked={selected.includes(value)}
+                        onChange={() => props.onToggle(group.name, value)}
+                      />
+                    }
+                    label={group.optionLabel(value)}
+                  />
+                ))}
+              </FormGroup>
+            </AccordionDetails>
+          </Accordion>
+        );
+      })}
+    </Box>
+  );
+}

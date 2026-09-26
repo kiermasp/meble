@@ -59,7 +59,7 @@ services:
     ports:
       - "3011:3000"
     restart: unless-stopped
-    command: ["node", "packages/magazyn/dist/main.js"]
+    command: ["node", "packages/magazyn/serve.mjs"]
     healthcheck:
       test:
         [
