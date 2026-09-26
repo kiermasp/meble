@@ -5,8 +5,8 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w @meble/domain && npm run build -w @meble/api",
-    "test": "npm test -w @meble/api"
+    "build": "npm run build -w @meble/domain && npm run build -w @meble/api && npm run build -w @meble/magazyn",
+    "test": "npm test -w @meble/api && npm test -w @meble/magazyn"
   },
   "devDependencies": {
     "typescript": "^5.9.2"
