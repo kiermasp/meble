@@ -7,6 +7,7 @@ import { JsonExceptionFilter, jsonBodyError, jsonOnly } from "./json-only";
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bodyParser: false });
+  app.enableCors();
   app.use(jsonOnly);
   app.use(json({ type: "application/json" }));
   app.use(jsonBodyError);
