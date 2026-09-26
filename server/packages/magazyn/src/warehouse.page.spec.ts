@@ -9,7 +9,7 @@ function board(overrides: Partial<CatalogBoard> = {}): CatalogBoard {
     categoryLabel: "Płyta meblowa",
     manufacturer: "Egger",
     thicknessMm: 18,
-    availability: "in_stock",
+    availability: "48h",
     ...overrides,
   };
 }
@@ -26,7 +26,7 @@ describe("renderWarehousePage", () => {
           categoryLabel: "TSS Cleaf",
           manufacturer: "Cleaf",
           thicknessMm: 18.4,
-          availability: "on_order",
+          availability: "7 dni",
         }),
         board({
           externalCode: "67544",
@@ -35,7 +35,7 @@ describe("renderWarehousePage", () => {
           categoryLabel: "HDF",
           manufacturer: null,
           thicknessMm: 3,
-          availability: "in_stock",
+          availability: "48h",
         }),
         board({
           externalCode: "4745363",
@@ -44,7 +44,7 @@ describe("renderWarehousePage", () => {
           categoryLabel: "Rauvisio Grip",
           manufacturer: "Rehau",
           thicknessMm: 16,
-          availability: "on_order_pallet",
+          availability: "14 dni",
         }),
       ],
     });
@@ -56,9 +56,8 @@ describe("renderWarehousePage", () => {
     expect(html).toContain("18,4 mm");
     expect(html).toContain(">3 mm<");
     expect(html).toContain(">—<");
-    expect(html).toContain("na magazynie");
-    expect(html).toContain("na zamówienie — paleta");
-    expect(html).not.toContain("minimalna ilość");
+    expect(html).toContain("48h");
+    expect(html).toContain("14 dni");
     expect(html).toContain("4 z 4");
   });
 
@@ -79,16 +78,16 @@ describe("renderWarehousePage", () => {
           displayName: "U708 PGST9 / Szary jasny",
           category: "plyty-wysoki-polysk",
           categoryLabel: "Wysoki połysk",
-          availability: "on_order",
+          availability: "7 dni",
         }),
       ],
       category: "plyty-wysoki-polysk",
-      availability: "on_order",
+      availability: "7 dni",
     });
     expect(html).toContain("U708 PGST9");
     expect(html).not.toContain("W1000 ST19 / Biały premium");
     expect(html).toContain("1 z 2");
     expect(html).toContain("value=\"plyty-wysoki-polysk\" selected");
-    expect(html).toContain("value=\"on_order\" selected");
+    expect(html).toContain("value=\"7 dni\" selected");
   });
 });

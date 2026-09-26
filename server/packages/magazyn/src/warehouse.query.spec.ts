@@ -13,10 +13,10 @@ const metadata = { type: "query" as const, metatype: WarehouseQuery, data: "" };
 describe("WarehouseQuery", () => {
   it("accepts a category and availability from the domain", async () => {
     const query = await pipe.transform(
-      { category: "plyty-meblowe", availability: "on_order_pallet" },
+      { category: "plyty-meblowe", availability: "48h" },
       metadata,
     );
-    expect(query).toMatchObject({ category: "plyty-meblowe", availability: "on_order_pallet" });
+    expect(query).toMatchObject({ category: "plyty-meblowe", availability: "48h" });
   });
 
   it("treats empty filters as the whole catalog", async () => {
@@ -32,7 +32,7 @@ describe("WarehouseQuery", () => {
   });
 
   it("rejects query fields the page does not declare", async () => {
-    await expect(pipe.transform({ category: "hdf", extra: "1" }, metadata)).rejects.toBeInstanceOf(
+    await expect(pipe.transform({ category: "plyty-meblowe", extra: "1" }, metadata)).rejects.toBeInstanceOf(
       BadRequestException,
     );
   });

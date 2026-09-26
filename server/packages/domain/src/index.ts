@@ -1,9 +1,3 @@
-export {
-  AVAILABILITY_LABELS,
-  AVAILABILITY_STATUSES,
-  CATEGORY_LABELS,
-  MATERIAL_CATEGORIES,
-  isAvailabilityStatus,
-  isMaterialCategory,
-} from "./material";
-export type { AvailabilityStatus, Material, MaterialCategory } from "./material";
+export { SHOP_SECTIONS, SHOP_SECTION_SLUGS, isShopSection, sectionLabel } from "./shop-catalog";
+export type { ShopSection, ShopSectionSlug, ShopSubtype } from "./shop-catalog";
+export type { Material } from "./material";

@@ -1,20 +1,15 @@
-import {
-  AVAILABILITY_STATUSES,
-  MATERIAL_CATEGORIES,
-  type AvailabilityStatus,
-  type MaterialCategory,
-} from "@meble/domain";
+import { SHOP_SECTION_SLUGS, type ShopSectionSlug } from "@meble/domain";
 import { Transform } from "class-transformer";
-import { IsIn, IsOptional } from "class-validator";
+import { IsIn, IsOptional, IsString } from "class-validator";
 
 export class WarehouseQuery {
   @Transform(({ value }) => (value === "" ? undefined : value))
   @IsOptional()
-  @IsIn([...MATERIAL_CATEGORIES])
-  category?: MaterialCategory;
+  @IsIn([...SHOP_SECTION_SLUGS])
+  category?: ShopSectionSlug;
 
   @Transform(({ value }) => (value === "" ? undefined : value))
   @IsOptional()
-  @IsIn([...AVAILABILITY_STATUSES])
-  availability?: AvailabilityStatus;
+  @IsString()
+  availability?: string;
 }

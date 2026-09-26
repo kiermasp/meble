@@ -1,18 +1,4 @@
-import {
-  AVAILABILITY_STATUSES,
-  CATEGORY_LABELS,
-  isAvailabilityStatus,
-  isMaterialCategory,
-  type AvailabilityStatus,
-  type MaterialCategory,
-} from "@meble/domain";
 import type { CatalogBoard } from "./catalog-board";
-
-const PAGE_AVAILABILITY_LABELS: Record<AvailabilityStatus, string> = {
-  in_stock: "na magazynie",
-  on_order: "na zamówienie",
-  on_order_pallet: "na zamówienie — paleta",
-};
 
 const PAGE_STYLE = `
 :root { color: #1c1917; background: #f6f3ee; font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif; }
@@ -36,8 +22,8 @@ th { font-size: 0.85rem; letter-spacing: 0.02em; color: #57534e; }
 
 export function renderWarehousePage(input: {
   boards: CatalogBoard[];
-  category?: MaterialCategory;
-  availability?: AvailabilityStatus;
+  category?: string;
+  availability?: string;
   error?: string;
 }): string {
   const visible = input.boards
@@ -64,7 +50,7 @@ export function renderWarehousePage(input: {
     </header>
     <form class="filters" method="get" action="/">
       ${labeled("Kategoria", "category", categoryOptions(input.boards, input.category))}
-      ${labeled("Dostępność", "availability", availabilityOptions(input.availability))}
+      ${labeled("Dostępność", "availability", availabilityOptions(input.boards, input.availability))}
       <noscript><button type="submit">Pokaż</button></noscript>
     </form>
     <p>${escapeHtml(summary)}</p>
@@ -92,27 +78,22 @@ export function renderHealthPage(): string {
 }
 
 function renderRow(board: CatalogBoard): string {
-  const availability = isAvailabilityStatus(board.availability) ? board.availability : null;
-  const availabilityCell = availability
-    ? `<td><span class="status ${availability}">${escapeHtml(PAGE_AVAILABILITY_LABELS[availability])}</span></td>`
-    : `<td>${escapeHtml(board.availability)}</td>`;
   return `<tr>
     <td>${escapeHtml(board.externalCode)}</td>
     <td>${escapeHtml(board.displayName)}</td>
     <td>${escapeHtml(board.manufacturer || "—")}</td>
     <td>${escapeHtml(thicknessLabel(board.thicknessMm))}</td>
-    <td>${escapeHtml(categoryLabel(board))}</td>
-    ${availabilityCell}
+    <td>${escapeHtml(board.categoryLabel || board.category)}</td>
+    <td>${escapeHtml(board.availability || "—")}</td>
   </tr>`;
 }
 
-function categoryOptions(boards: CatalogBoard[], selected?: MaterialCategory): string {
-  const categories = new Map<MaterialCategory, string>();
+function categoryOptions(boards: CatalogBoard[], selected?: string): string {
+  const categories = new Map<string, string>();
   for (const board of boards) {
-    if (!isMaterialCategory(board.category)) continue;
-    categories.set(board.category, CATEGORY_LABELS[board.category]);
+    categories.set(board.category, board.categoryLabel || board.category);
   }
-  if (selected) categories.set(selected, CATEGORY_LABELS[selected]);
+  if (selected && !categories.has(selected)) categories.set(selected, selected);
   const options = [...categories.entries()].sort((left, right) => left[1].localeCompare(right[1], "pl"));
   return [
     option("", "Wszystkie", selected == null),
@@ -120,10 +101,12 @@ function categoryOptions(boards: CatalogBoard[], selected?: MaterialCategory): s
   ].join("");
 }
 
-function availabilityOptions(selected?: AvailabilityStatus): string {
+function availabilityOptions(boards: CatalogBoard[], selected?: string): string {
+  const values = [...new Set(boards.map((board) => board.availability).filter((value) => value))];
+  values.sort((left, right) => left.localeCompare(right, "pl"));
   return [
     option("", "Wszystkie", selected == null),
-    ...AVAILABILITY_STATUSES.map((status) => option(status, PAGE_AVAILABILITY_LABELS[status], status === selected)),
+    ...values.map((value) => option(value, value, value === selected)),
   ].join("");
 }
 
@@ -134,11 +117,6 @@ function option(value: string, label: string, selected: boolean): string {
 
 function labeled(caption: string, name: string, options: string): string {
   return `<label><span>${caption}</span><select name="${name}" onchange="this.form.submit()">${options}</select></label>`;
-}
-
-function categoryLabel(board: CatalogBoard): string {
-  if (isMaterialCategory(board.category)) return CATEGORY_LABELS[board.category];
-  return board.categoryLabel || board.category;
 }
 
 function thicknessLabel(mm: number | null): string {

@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import type { Material, MaterialCategory } from "@meble/domain";
+import type { Material, ShopSectionSlug } from "@meble/domain";
 import { Repository } from "typeorm";
 import { toMaterial } from "./material.mapper";
 import { MaterialRow } from "./material.row";
@@ -21,10 +21,23 @@ export class MaterialStore {
       externalCode: material.externalCode,
       displayName: material.displayName,
       category: material.category,
+      subtype: material.subtype,
       manufacturer: material.manufacturer,
+      decorCode: material.decorCode,
+      decorName: material.decorName,
       structure: material.structure,
       thicknessMm: material.thicknessMm,
+      format: material.format,
       availability: material.availability,
+      unitPriceAmount: material.unitPriceAmount,
+      currency: material.currency,
+      decorKind: material.decorKind,
+      waterResistance: material.waterResistance,
+      brightness: material.brightness,
+      decorType: material.decorType,
+      shade: material.shade,
+      color: material.color,
+      statuses: material.statuses,
       fetchedAt: material.fetchedAt,
     }));
     if (values.length === 0) return;
@@ -34,7 +47,27 @@ export class MaterialStore {
     });
   }
 
-  async list(category?: MaterialCategory): Promise<Material[]> {
+  async replaceCategory(category: ShopSectionSlug, materials: Material[]): Promise<void> {
+    await this.upsertAll(materials);
+    const codes = [...new Set(materials.map((material) => material.externalCode))];
+    if (codes.length === 0) return;
+    await this.materials
+      .createQueryBuilder()
+      .delete()
+      .where("category = :category AND external_code NOT IN (:...codes)", { category, codes })
+      .execute();
+  }
+
+  async deleteOtherCategories(keep: ShopSectionSlug[]): Promise<void> {
+    if (keep.length === 0) return;
+    await this.materials
+      .createQueryBuilder()
+      .delete()
+      .where("category NOT IN (:...keep)", { keep })
+      .execute();
+  }
+
+  async list(category?: ShopSectionSlug): Promise<Material[]> {
     const rows = await this.materials.find({
       where: category ? { category } : {},
       order: { category: "ASC", externalCode: "ASC" },

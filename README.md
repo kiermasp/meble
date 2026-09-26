@@ -36,7 +36,7 @@ API nasłuchuje na porcie **3010** (w kontenerze 3000). Magazyn nasłuchuje na p
 API wystawia wyłącznie JSON (`Content-Type: application/json`):
 
 - `GET /health` — `{ "status": "ok", "materials": <liczba> }`
-- `GET /materials` — lista płyt, z `manufacturer` (producent: Egger, Rehau, Cleaf; puste dla HDF) i `thicknessMm` (grubość w mm)
+- `GET /materials` — warianty płyt: `manufacturer`, `decorCode`, `decorName`, `structure`, `thicknessMm`, `format`, `availability`, `unitPriceAmount`, `currency`
 - `GET /materials?category=plyty-meblowe` — jedna kategoria
 
 ```bash
@@ -44,9 +44,7 @@ curl -H 'Accept: application/json' http://127.0.0.1:3010/health
 curl -H 'Accept: application/json' "http://127.0.0.1:3010/materials?category=plyty-meblowe"
 ```
 
-Źródło: `POST https://www.meble.pl/rozkroj/go/ajaxRequest,showDialogPlyta` z treścią `nr=1&id=0&zakladka=plyty-meblowe&plytyId=0,0`. Odpowiedź to HTML. Jedno wywołanie zawiera zakładki: Płyta meblowa, Płyta akrylowa, Wysoki połysk, Głęboki mat, Rauvisio Crystal, TSS Cleaf, HDF, Rauvisio Grip.
-
-Legenda: zielony `in_stock` = na magazynie, pomarańczowy `on_order` = na zamówienie, czerwony `on_order_pallet` = na zamówienie, minimalna ilość to paleta.
+Źródło katalogu: listing sklepu [płyty meblowe](https://www.meble.pl/plyty-meblowe/?view=icon). Każdy wariant (grubość × struktura) jest osobnym rekordem. Cena i czas dostawy pochodzą z karty na listingu. Pozostałe działy (sklejki, obrzeża, płyty budowlane, laminaty, płyty akrylowe, blaty, panele wnękowe) są opisane w domenie i nie są jeszcze pobierane.
 
 Baza lokalna: `postgres://meble:meble@127.0.0.1:5432/meble`. Hasło jest tylko do tego compose, nie do produkcji.
 
@@ -59,7 +57,7 @@ cd ~/github/meble/server
 npm test
 ```
 
-Parser czyta prawdziwą odpowiedź `showDialogPlyta`. Drugi test sprawdza, że ponowny upsert aktualizuje płytę i nie dodaje duplikatu.
+Parser czyta kartę z listingu sklepu i specyfikację ze strony produktu. Test zapisu sprawdza, że ponowny upsert aktualizuje wariant i usuwa kod, którego nie ma w nowym przebiegu.
 
 ## Magazyn
 

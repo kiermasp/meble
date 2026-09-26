@@ -6,15 +6,28 @@ import { MaterialRow } from "./material.row";
 const adminUrl = process.env.TEST_DATABASE_URL ?? "postgres://meble:meble@127.0.0.1:5432/meble";
 const testUrl = adminUrl.replace(/\/[^/?]+(\?|$)/, "/meble_test$1");
 
-function board(overrides: Partial<Material> = {}): Material {
+function variant(overrides: Partial<Material> = {}): Material {
   return {
-    externalCode: "W1000 ST19",
-    displayName: "W1000 ST19 / Biały premium",
+    externalCode: "5829997",
+    displayName: "Płyta meblowa EGGER W960 SM Biały klasyczny 18 mm",
     category: "plyty-meblowe",
+    subtype: "Białe",
     manufacturer: "Egger",
-    structure: "ST19",
+    decorCode: "W960",
+    decorName: "Biały klasyczny",
+    structure: "SM SemiMatt",
     thicknessMm: 18,
-    availability: "in_stock",
+    format: "2070x2800",
+    availability: "48h",
+    unitPriceAmount: 227.45,
+    currency: "PLN",
+    decorKind: "Magazynowe",
+    waterResistance: "Suchotrwała",
+    brightness: null,
+    decorType: null,
+    shade: "białe",
+    color: "Biały klasyczny",
+    statuses: ["Kolekcja 26+"],
     fetchedAt: new Date("2026-09-26T10:00:00.000Z"),
     ...overrides,
   };
@@ -50,39 +63,58 @@ describe("MaterialStore upsert", () => {
     if (dataSource?.isInitialized) await dataSource.destroy();
   });
 
-  it("updates the same board on the second run instead of inserting a duplicate", async () => {
-    await store.upsertAll([board()]);
+  it("updates the same variant and drops codes missing from the next run", async () => {
     await store.upsertAll([
-      board({
-        displayName: "W1000 ST19 / Biały premium (aktualizacja)",
-        manufacturer: "Egger",
-        thicknessMm: 19,
-        availability: "on_order",
-        fetchedAt: new Date("2026-09-26T13:00:00.000Z"),
-      }),
-      board({
-        externalCode: "U708 PGST9",
-        displayName: "U708 PGST9 / Szary jasny",
-        manufacturer: "Egger",
-        structure: "PGST9",
-        category: "plyty-wysoki-polysk",
-        availability: "on_order_pallet",
+      variant(),
+      variant({
+        externalCode: "3149044",
+        manufacturer: "Kronospan",
+        decorCode: "U8685",
+        structure: "BS",
+        unitPriceAmount: 160,
+        availability: "48h",
       }),
     ]);
+    await store.replaceCategory("plyty-meblowe", [
+      variant({
+        unitPriceAmount: 230,
+        availability: "7 dni",
+        fetchedAt: new Date("2026-09-26T13:00:00.000Z"),
+      }),
+    ]);
+    await store.upsertAll([
+      variant({
+        externalCode: "1",
+        category: "sklejki",
+        displayName: "Sklejka",
+        manufacturer: null,
+        decorCode: null,
+        decorName: null,
+        structure: null,
+        thicknessMm: null,
+        format: null,
+        availability: null,
+        unitPriceAmount: null,
+        currency: null,
+        decorKind: null,
+        waterResistance: null,
+        shade: null,
+        color: null,
+        statuses: [],
+        subtype: null,
+      }),
+    ]);
+    await store.deleteOtherCategories(["plyty-meblowe"]);
 
     const rows = await store.list();
-    expect(rows).toHaveLength(2);
-    const updated = rows.find((row) => row.externalCode === "W1000 ST19");
-    expect(updated).toMatchObject({
-      displayName: "W1000 ST19 / Biały premium (aktualizacja)",
-      manufacturer: "Egger",
-      thicknessMm: 19,
-      availability: "on_order",
-      structure: "ST19",
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      externalCode: "5829997",
+      unitPriceAmount: 230,
+      availability: "7 dni",
+      currency: "PLN",
       category: "plyty-meblowe",
     });
-    expect(updated?.fetchedAt.toISOString()).toBe("2026-09-26T13:00:00.000Z");
-    const ids = await dataSource.getRepository(MaterialRow).find({ select: { id: true } });
-    expect(new Set(ids.map((row) => row.id)).size).toBe(2);
+    expect(rows[0]?.fetchedAt.toISOString()).toBe("2026-09-26T13:00:00.000Z");
   });
 });

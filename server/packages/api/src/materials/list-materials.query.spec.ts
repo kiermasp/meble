@@ -11,9 +11,11 @@ const pipe = new ValidationPipe({
 const metadata = { type: "query" as const, metatype: ListMaterialsQuery, data: "" };
 
 describe("ListMaterialsQuery", () => {
-  it("accepts a category defined in the domain", async () => {
-    const query = await pipe.transform({ category: "hdf" }, metadata);
-    expect(query).toMatchObject({ category: "hdf" });
+  it("accepts a shop section, including one that is not ingested yet", async () => {
+    const boards = await pipe.transform({ category: "plyty-meblowe" }, metadata);
+    const plywood = await pipe.transform({ category: "sklejki" }, metadata);
+    expect(boards).toMatchObject({ category: "plyty-meblowe" });
+    expect(plywood).toMatchObject({ category: "sklejki" });
   });
 
   it("treats a missing category as the whole catalog", async () => {
@@ -22,13 +24,13 @@ describe("ListMaterialsQuery", () => {
   });
 
   it("rejects an unknown category", async () => {
-    await expect(pipe.transform({ category: "sklejka" }, metadata)).rejects.toBeInstanceOf(
+    await expect(pipe.transform({ category: "rozkroj" }, metadata)).rejects.toBeInstanceOf(
       BadRequestException,
     );
   });
 
   it("rejects query fields the endpoint does not declare", async () => {
-    await expect(pipe.transform({ category: "hdf", extra: "1" }, metadata)).rejects.toBeInstanceOf(
+    await expect(pipe.transform({ category: "blaty", extra: "1" }, metadata)).rejects.toBeInstanceOf(
       BadRequestException,
     );
   });

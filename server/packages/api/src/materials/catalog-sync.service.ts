@@ -2,7 +2,6 @@ import { Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from "@ne
 import { ConfigService } from "@nestjs/config";
 import { MaterialStore } from "./material-store";
 import { MebleCatalogClient } from "./meble-catalog.client";
-import { parseBoardDialog } from "./parse-board-dialog";
 
 const DEFAULT_INTERVAL_MS = 3 * 60 * 60 * 1000;
 
@@ -35,14 +34,14 @@ export class CatalogSyncService implements OnApplicationBootstrap, OnModuleDestr
   }
 
   async sync(): Promise<number> {
-    const html = await this.client.fetchBoardDialog();
     const fetchedAt = new Date();
-    const materials = parseBoardDialog(html, fetchedAt);
+    const materials = await this.client.fetchFurnitureBoards(fetchedAt);
     if (materials.length === 0) {
-      throw new Error("Board dialog parsed to zero materials");
+      throw new Error("Shop catalog parsed to zero variants");
     }
-    await this.store.upsertAll(materials);
-    this.logger.log(`Upserted ${materials.length} board materials`);
+    await this.store.replaceCategory("plyty-meblowe", materials);
+    await this.store.deleteOtherCategories(["plyty-meblowe"]);
+    this.logger.log(`Upserted ${materials.length} furniture-board variants`);
     return materials.length;
   }
 

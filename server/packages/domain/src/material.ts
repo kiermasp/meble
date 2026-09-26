@@ -1,58 +1,28 @@
-export const MATERIAL_CATEGORIES = [
-  "plyty-meblowe",
-  "plyty-akrylowe",
-  "plyty-wysoki-polysk",
-  "plyty-gleboki-mat",
-  "plyty-crystal",
-  "plyty-tss-cleaf",
-  "hdf",
-  "grip",
-] as const;
-
-export type MaterialCategory = (typeof MATERIAL_CATEGORIES)[number];
-
-export const CATEGORY_LABELS: Record<MaterialCategory, string> = {
-  "plyty-meblowe": "Płyta meblowa",
-  "plyty-akrylowe": "Płyta akrylowa",
-  "plyty-wysoki-polysk": "Wysoki połysk",
-  "plyty-gleboki-mat": "Głęboki mat",
-  "plyty-crystal": "Rauvisio Crystal",
-  "plyty-tss-cleaf": "TSS Cleaf",
-  hdf: "HDF",
-  grip: "Rauvisio Grip",
-};
-
-export function isMaterialCategory(value: string): value is MaterialCategory {
-  return (MATERIAL_CATEGORIES as readonly string[]).includes(value);
-}
-
-/** Green, orange, and red tiles on the meble.pl board dialog. */
-export const AVAILABILITY_STATUSES = [
-  "in_stock",
-  "on_order",
-  "on_order_pallet",
-] as const;
-
-export type AvailabilityStatus = (typeof AVAILABILITY_STATUSES)[number];
-
-export const AVAILABILITY_LABELS: Record<AvailabilityStatus, string> = {
-  in_stock: "na magazynie",
-  on_order: "na zamówienie",
-  on_order_pallet: "na zamówienie — minimalna ilość to paleta",
-};
-
-export function isAvailabilityStatus(value: string): value is AvailabilityStatus {
-  return (AVAILABILITY_STATUSES as readonly string[]).includes(value);
-}
+import { type ShopSectionSlug } from "./shop-catalog";
 
 export interface Material {
+  /** Shop product id, one row per purchasable thickness × structure. */
   externalCode: string;
   displayName: string;
-  category: MaterialCategory;
-  /** Producer name printed by meble.pl. Null when that product page leaves the brand empty. */
+  category: ShopSectionSlug;
+  subtype: string | null;
   manufacturer: string | null;
+  decorCode: string | null;
+  decorName: string | null;
   structure: string | null;
   thicknessMm: number | null;
-  availability: AvailabilityStatus;
+  format: string | null;
+  /** Lead time printed on the shop card, such as 48h or 7 dni. */
+  availability: string | null;
+  unitPriceAmount: number | null;
+  currency: string | null;
+  /** Shop filter "Rodzaj dekoru": Magazynowe or Produkcyjne (na zamówienie). */
+  decorKind: string | null;
+  waterResistance: string | null;
+  brightness: string | null;
+  decorType: string | null;
+  shade: string | null;
+  color: string | null;
+  statuses: string[];
   fetchedAt: Date;
 }
