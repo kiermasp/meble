@@ -38,13 +38,14 @@ API wystawia wyłącznie JSON (`Content-Type: application/json`):
 - `GET /health` — `{ "status": "ok", "materials": <liczba> }`
 - `GET /materials` — warianty płyt: `manufacturer`, `decorCode`, `decorName`, `structure`, `thicknessMm`, `format`, `availability`, `unitPriceAmount`, `currency`
 - `GET /materials?category=plyty-meblowe` — jedna kategoria
+- `GET /edgebands` — warianty obrzeży: `code`, `name`, `manufacturer`, `widthMm`, `thicknessMm`, `availability`, `unitPriceAmount`, `currency`
 
 ```bash
 curl -H 'Accept: application/json' http://127.0.0.1:3010/health
 curl -H 'Accept: application/json' "http://127.0.0.1:3010/materials?category=plyty-meblowe"
 ```
 
-Źródło katalogu: listing sklepu [płyty meblowe](https://www.meble.pl/plyty-meblowe/?view=icon). Każdy wariant (grubość × struktura) jest osobnym rekordem. Cena i czas dostawy pochodzą z karty na listingu. Pozostałe działy (sklejki, obrzeża, płyty budowlane, laminaty, płyty akrylowe, blaty, panele wnękowe) są opisane w domenie i nie są jeszcze pobierane.
+Źródło katalogu: listing sklepu [płyty meblowe](https://www.meble.pl/plyty-meblowe/?view=icon) oraz [obrzeża](https://www.meble.pl/obrzeza/?view=icon). Każdy wariant jest osobnym rekordem. Cena i czas dostawy pochodzą z karty na listingu. Pozostałe działy (sklejki, płyty budowlane, laminaty, płyty akrylowe, blaty, panele wnękowe) są opisane w domenie i nie są jeszcze pobierane.
 
 Baza lokalna: `postgres://meble:meble@127.0.0.1:5432/meble`. Hasło jest tylko do tego compose, nie do produkcji.
 

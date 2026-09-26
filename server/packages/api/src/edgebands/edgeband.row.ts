@@ -1,0 +1,74 @@
+import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
+
+@Entity({ name: "edgebands" })
+@Index(["externalCode"], { unique: true })
+export class EdgebandRow {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
+
+  @Column({ name: "external_code", type: "text" })
+  externalCode!: string;
+
+  @Column({ name: "display_name", type: "text" })
+  displayName!: string;
+
+  @Column({ type: "text", nullable: true })
+  code!: string | null;
+
+  @Column({ type: "text", nullable: true })
+  name!: string | null;
+
+  @Column({ type: "text", nullable: true })
+  manufacturer!: string | null;
+
+  @Column({ type: "text", nullable: true })
+  structure!: string | null;
+
+  @Column({
+    name: "width_mm",
+    type: "numeric",
+    precision: 6,
+    scale: 2,
+    nullable: true,
+    transformer: {
+      to: (value: number | null) => value,
+      from: (value: string | null) => (value == null ? null : Number(value)),
+    },
+  })
+  widthMm!: number | null;
+
+  @Column({
+    name: "thickness_mm",
+    type: "numeric",
+    precision: 5,
+    scale: 2,
+    nullable: true,
+    transformer: {
+      to: (value: number | null) => value,
+      from: (value: string | null) => (value == null ? null : Number(value)),
+    },
+  })
+  thicknessMm!: number | null;
+
+  @Column({ type: "text", nullable: true })
+  availability!: string | null;
+
+  @Column({
+    name: "unit_price_amount",
+    type: "numeric",
+    precision: 12,
+    scale: 2,
+    nullable: true,
+    transformer: {
+      to: (value: number | null) => value,
+      from: (value: string | null) => (value == null ? null : Number(value)),
+    },
+  })
+  unitPriceAmount!: number | null;
+
+  @Column({ type: "text", nullable: true })
+  currency!: string | null;
+
+  @Column({ name: "fetched_at", type: "timestamptz" })
+  fetchedAt!: Date;
+}

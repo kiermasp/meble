@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import type { Material } from "@meble/domain";
+import type { Edgeband, Material } from "@meble/domain";
+import { buildEdgeband } from "../edgebands/build-edgeband";
 import { buildVariant, emptyTags, type VariantTags } from "./build-variant";
 import { mapPool } from "./map-pool";
 import { parseProductSpecs } from "./parse-product-page";
@@ -62,6 +63,33 @@ export class MebleCatalogClient {
     });
 
     return cards.map((card, index) => buildVariant(card, specs[index] ?? null, tags.get(card.externalCode) ?? emptyTags(), fetchedAt));
+  }
+
+  async fetchEdgebands(fetchedAt: Date): Promise<Edgeband[]> {
+    const base = (this.config.get<string>("MEBLE_BASE_URL") ?? "https://www.meble.pl").replace(/\/$/, "");
+    const listingUrl = `${base}/obrzeza/?view=icon`;
+    const firstHtml = await this.getText(listingUrl);
+    const labels = await this.deliveryLabels(base, firstHtml);
+    const pages = listingPageCount(firstHtml);
+    const pageStyle = listingPageStyle(firstHtml);
+    const pageHtml = [firstHtml];
+    if (pages > 1) {
+      const rest = await mapPool(
+        Array.from({ length: pages - 1 }, (_, index) => index + 2),
+        4,
+        (page) => this.getText(listingPageUrl(listingUrl, page, pageStyle)),
+      );
+      pageHtml.push(...rest);
+    }
+    const cards = dedupeCards(pageHtml.flatMap((html) => parseListingCards(html, labels)));
+    if (cards.length === 0) {
+      throw new Error("Edgeband listing parsed to zero variants");
+    }
+    const priced = cards.filter((card) => card.unitPriceAmount != null).length;
+    if (priced === 0) {
+      throw new Error("Edgeband listing did not include any prices");
+    }
+    return cards.map((card) => buildEdgeband(card, fetchedAt));
   }
 
   private async deliveryLabels(base: string, listingHtml: string): Promise<Map<string, string>> {

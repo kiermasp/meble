@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { EdgebandStore } from "../edgebands/edgeband.store";
 import { MaterialStore } from "./material-store";
 import { MebleCatalogClient } from "./meble-catalog.client";
 
@@ -13,6 +14,7 @@ export class CatalogSyncService implements OnApplicationBootstrap, OnModuleDestr
   constructor(
     private readonly client: MebleCatalogClient,
     private readonly store: MaterialStore,
+    private readonly edgebands: EdgebandStore,
     private readonly config: ConfigService,
   ) {}
 
@@ -41,7 +43,9 @@ export class CatalogSyncService implements OnApplicationBootstrap, OnModuleDestr
     }
     await this.store.replaceCategory("plyty-meblowe", materials);
     await this.store.deleteOtherCategories(["plyty-meblowe"]);
-    this.logger.log(`Upserted ${materials.length} furniture-board variants`);
+    const edgebands = await this.client.fetchEdgebands(fetchedAt);
+    await this.edgebands.replaceAll(edgebands);
+    this.logger.log(`Upserted ${materials.length} furniture-board variants and ${edgebands.length} edgebands`);
     return materials.length;
   }
 

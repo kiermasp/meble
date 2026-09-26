@@ -1,4 +1,4 @@
-/** Shop sections from the meble.pl materials menu. Only płyty meblowe is ingested today. */
+/** Shop sections from the meble.pl materials menu. Płyty meblowe go into materials. Obrzeża go into edgebands. */
 export interface ShopSubtype {
   slug: string;
   label: string;
