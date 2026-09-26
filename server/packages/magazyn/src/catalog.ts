@@ -1,9 +1,11 @@
 export interface CatalogBoard {
   mebleRefId: string;
   displayName: string;
+  categoryId: string;
   category: string;
   categoryLabel: string;
   subtype: string | null;
+  manufacturerId: string | null;
   manufacturer: string | null;
   decorCode: string | null;
   decorName: string | null;
@@ -13,6 +15,7 @@ export interface CatalogBoard {
   availability: string | null;
   unitPriceAmount: number | null;
   currency: string | null;
+  decorKindId: string | null;
   decorKind: string | null;
   waterResistance: string | null;
   brightness: string | null;
@@ -23,6 +26,7 @@ export interface CatalogBoard {
 }
 
 export interface WarehouseFilters {
+  category?: string[];
   manufacturer?: string[];
   thickness?: string[];
   structure?: string[];
@@ -72,7 +76,8 @@ const DEFAULT_SORT: CatalogSort = {
 };
 
 export const FILTER_GROUPS: FilterGroup[] = [
-  { name: "manufacturer", label: "Producenci", values: (board) => present(board.manufacturer), optionLabel: identity, compare: comparePl },
+  { name: "category", label: "Kategoria", values: (board) => [board.categoryId], optionLabel: identity, compare: comparePl },
+  { name: "manufacturer", label: "Producenci", values: (board) => present(board.manufacturerId), optionLabel: identity, compare: comparePl },
   {
     name: "thickness",
     label: "Grubość",
@@ -81,7 +86,7 @@ export const FILTER_GROUPS: FilterGroup[] = [
     compare: (left, right) => Number(left) - Number(right),
   },
   { name: "structure", label: "Struktura", values: (board) => present(board.structure), optionLabel: identity, compare: comparePl },
-  { name: "decorKind", label: "Rodzaj dekoru", values: (board) => present(board.decorKind), optionLabel: identity, compare: comparePl },
+  { name: "decorKind", label: "Rodzaj dekoru", values: (board) => present(board.decorKindId), optionLabel: identity, compare: comparePl },
   { name: "format", label: "Format", values: (board) => present(board.format), optionLabel: identity, compare: comparePl },
   {
     name: "waterResistance",
@@ -103,9 +108,11 @@ export function isCatalogBoard(value: unknown): value is CatalogBoard {
   return (
     typeof row.mebleRefId === "string" &&
     typeof row.displayName === "string" &&
+    typeof row.categoryId === "string" &&
     typeof row.category === "string" &&
     typeof row.categoryLabel === "string" &&
     nullableString(row.subtype) &&
+    nullableString(row.manufacturerId) &&
     nullableString(row.manufacturer) &&
     nullableString(row.decorCode) &&
     nullableString(row.decorName) &&
@@ -115,6 +122,7 @@ export function isCatalogBoard(value: unknown): value is CatalogBoard {
     nullableString(row.availability) &&
     nullableNumber(row.unitPriceAmount) &&
     nullableString(row.currency) &&
+    nullableString(row.decorKindId) &&
     nullableString(row.decorKind) &&
     nullableString(row.waterResistance) &&
     nullableString(row.brightness) &&

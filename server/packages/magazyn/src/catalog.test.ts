@@ -18,9 +18,11 @@ function board(overrides: Partial<CatalogBoard> = {}): CatalogBoard {
   return {
     mebleRefId: "5829997",
     displayName: "Płyta meblowa EGGER W960 SM Biały klasyczny 18 mm",
+    categoryId: "cat-boards",
     category: "plyty-meblowe",
     categoryLabel: "Płyty meblowe",
     subtype: "bialy",
+    manufacturerId: "m-egger",
     manufacturer: "Egger",
     decorCode: "W960",
     decorName: "Biały klasyczny",
@@ -30,6 +32,7 @@ function board(overrides: Partial<CatalogBoard> = {}): CatalogBoard {
     availability: "48h",
     unitPriceAmount: 227.45,
     currency: "PLN",
+    decorKindId: "dk-mag",
     decorKind: "Magazynowe",
     waterResistance: "Suchotrwała",
     brightness: null,
@@ -50,10 +53,12 @@ describe("viewCatalog", () => {
       thicknessMm: 36,
       availability: "14 dni",
       unitPriceAmount: 344.74,
+      decorKindId: "dk-prod",
       decorKind: "Produkcyjne (na zamówienie)",
     }),
     board({
       mebleRefId: "3149044",
+      manufacturerId: "m-krono",
       manufacturer: "Kronospan",
       decorCode: "5981",
       decorName: "Kaszmir",
@@ -75,7 +80,7 @@ describe("viewCatalog", () => {
   });
 
   it("combines filters and still offers every option from the full catalog", () => {
-    const groups = viewCatalog(boards, { manufacturer: ["Egger"], thickness: ["18"] }, defaultSort);
+    const groups = viewCatalog(boards, { manufacturer: ["m-egger"], thickness: ["18"] }, defaultSort);
     expect(groups).toHaveLength(1);
     expect(groups[0].stock.map((row) => row.mebleRefId)).toEqual(["5829997"]);
     expect(groups[0].ordered).toEqual([]);

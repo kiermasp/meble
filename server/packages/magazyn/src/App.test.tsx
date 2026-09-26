@@ -11,9 +11,11 @@ function board(overrides: Partial<CatalogBoard> = {}): CatalogBoard {
   return {
     mebleRefId: "5829997",
     displayName: "Płyta meblowa EGGER W960 SM Biały klasyczny 18 mm",
+    categoryId: "cat-boards",
     category: "plyty-meblowe",
     categoryLabel: "Płyty meblowe",
     subtype: "bialy",
+    manufacturerId: "m-egger",
     manufacturer: "Egger",
     decorCode: "W960",
     decorName: "Biały klasyczny",
@@ -23,6 +25,7 @@ function board(overrides: Partial<CatalogBoard> = {}): CatalogBoard {
     availability: "48h",
     unitPriceAmount: 227.45,
     currency: "PLN",
+    decorKindId: "dk-mag",
     decorKind: "Magazynowe",
     waterResistance: "Suchotrwała",
     brightness: null,
@@ -49,10 +52,12 @@ const boards = [
     thicknessMm: 16,
     availability: "14 dni",
     unitPriceAmount: 344.74,
+    decorKindId: "dk-prod",
     decorKind: "Produkcyjne (na zamówienie)",
   }),
   board({
     mebleRefId: "3149044",
+    manufacturerId: "m-krono",
     manufacturer: "Kronospan",
     decorCode: "5981",
     decorName: "Kaszmir",
@@ -77,11 +82,25 @@ describe("App", () => {
   beforeEach(() => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => ({
-        ok: true,
-        headers: { get: () => "application/json" },
-        json: async () => boards,
-      })),
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        const body =
+          url === "/categories"
+            ? [{ id: "cat-boards", code: "plyty-meblowe", name: "Płyty meblowe", sortOrder: 1, mebleRefId: "1" }]
+            : url === "/manufacturers"
+              ? [
+                  { id: "m-egger", code: "egger", name: "Egger", sortOrder: 1, mebleRefId: "2962397" },
+                  { id: "m-krono", code: "kronospan", name: "Kronospan", sortOrder: 2, mebleRefId: "3262928" },
+                ]
+              : url === "/decor-kinds"
+                ? [
+                    { id: "dk-mag", code: "magazynowe", name: "Magazynowe", sortOrder: 1, mebleRefId: "3263401" },
+                    { id: "dk-prod", code: "produkcyjne-na-zamowienie", name: "Produkcyjne (na zamówienie)", sortOrder: 2, mebleRefId: "3263402" },
+                    { id: "dk-new", code: "nowa-linia", name: "Nowa linia", sortOrder: 3, mebleRefId: null },
+                  ]
+                : boards;
+        return { ok: true, headers: { get: () => "application/json" }, json: async () => body };
+      }),
     );
   });
 
@@ -92,6 +111,8 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "Kronospan 5981 Kaszmir" })).toBeInTheDocument();
     expect(screen.getByText("Warianty na zamówienie")).toBeInTheDocument();
     expect(screen.getByText("Producenci")).toBeInTheDocument();
+    expect(screen.getByText("Kategoria")).toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: "Nowa linia" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Sortuj dekory" })).toBeInTheDocument();
 
     const card = screen.getByRole("heading", { name: "Egger W960 Biały klasyczny" }).closest(".MuiCard-root");

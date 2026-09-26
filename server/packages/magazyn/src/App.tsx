@@ -24,7 +24,8 @@ import {
   type RowSort,
   type WarehouseFilters,
 } from "./catalog";
-import { FilterSidebar } from "./components/FilterSidebar";
+import { FilterSidebar, type CatalogLookups } from "./components/FilterSidebar";
+import { loadLookups } from "./lookups";
 import { ProductList } from "./components/ProductList";
 import { SortBar } from "./components/SortBar";
 import { drawerWidth } from "./theme";
@@ -45,15 +46,17 @@ function BoardsPage() {
   const [params, setParams] = useSearchParams();
   const { filters, sort } = readViewState(params);
   const [boards, setBoards] = useState<CatalogBoard[]>([]);
+  const [lookups, setLookups] = useState<CatalogLookups>({ category: [], manufacturer: [], decorKind: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    loadCatalog()
-      .then((next) => {
+    Promise.all([loadCatalog(), loadLookups("/categories"), loadLookups("/manufacturers"), loadLookups("/decor-kinds")])
+      .then(([next, category, manufacturer, decorKind]) => {
         if (cancelled) return;
         setBoards(next);
+        setLookups({ category, manufacturer, decorKind });
         setError(false);
       })
       .catch(() => {
@@ -76,6 +79,7 @@ function BoardsPage() {
   const drawer = (
     <FilterSidebar
       boards={boards}
+      lookups={lookups}
       filters={filters}
       onToggle={(name, value) => commit(toggleFilter(filters, name, value), sort)}
       onClear={() => commit({}, sort)}

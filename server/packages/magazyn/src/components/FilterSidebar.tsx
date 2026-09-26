@@ -9,9 +9,11 @@ import Chip from "@mui/material/Chip";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormGroup from "@mui/material/FormGroup";
 import Typography from "@mui/material/Typography";
-import { FILTER_GROUPS, filterOptions, type CatalogBoard, type WarehouseFilters } from "../catalog";
+import { FILTER_GROUPS, filterOptions, type CatalogBoard, type FilterGroup, type WarehouseFilters } from "../catalog";
+import type { LookupRecord } from "../lookups";
 
 const OPEN_BY_DEFAULT = new Set<keyof WarehouseFilters>([
+  "category",
   "manufacturer",
   "thickness",
   "structure",
@@ -22,6 +24,7 @@ const OPEN_BY_DEFAULT = new Set<keyof WarehouseFilters>([
 
 export function FilterSidebar(props: {
   boards: CatalogBoard[];
+  lookups: CatalogLookups;
   filters: WarehouseFilters;
   onToggle: (name: keyof WarehouseFilters, value: string) => void;
   onClear: () => void;
@@ -33,7 +36,7 @@ export function FilterSidebar(props: {
         Wyczyść filtry
       </Button>
       {FILTER_GROUPS.map((group) => {
-        const values = filterOptions(props.boards, group);
+        const values = optionsFor(group, props.boards, props.lookups);
         if (values.length === 0) return null;
         const selected = props.filters[group.name] ?? [];
         return (
@@ -46,15 +49,15 @@ export function FilterSidebar(props: {
               <FormGroup sx={{ maxHeight: 220, overflow: "auto", flexWrap: "nowrap" }}>
                 {values.map((value) => (
                   <FormControlLabel
-                    key={value}
+                    key={value.value}
                     control={
                       <Checkbox
                         size="small"
-                        checked={selected.includes(value)}
-                        onChange={() => props.onToggle(group.name, value)}
+                        checked={selected.includes(value.value)}
+                        onChange={() => props.onToggle(group.name, value.value)}
                       />
                     }
-                    label={group.optionLabel(value)}
+                    label={value.label}
                   />
                 ))}
               </FormGroup>
@@ -64,4 +67,27 @@ export function FilterSidebar(props: {
       })}
     </Box>
   );
+}
+
+export interface CatalogLookups {
+  category: LookupRecord[];
+  manufacturer: LookupRecord[];
+  decorKind: LookupRecord[];
+}
+
+function optionsFor(group: FilterGroup, boards: CatalogBoard[], lookups: CatalogLookups): { value: string; label: string }[] {
+  const dictionary = dictionaryFor(group.name, lookups);
+  if (dictionary) {
+    return [...dictionary]
+      .sort((left, right) => left.sortOrder - right.sortOrder || left.name.localeCompare(right.name, "pl"))
+      .map((row) => ({ value: row.id, label: row.name }));
+  }
+  return filterOptions(boards, group).map((value) => ({ value, label: group.optionLabel(value) }));
+}
+
+function dictionaryFor(name: keyof WarehouseFilters, lookups: CatalogLookups): LookupRecord[] | null {
+  if (name === "category") return lookups.category;
+  if (name === "manufacturer") return lookups.manufacturer;
+  if (name === "decorKind") return lookups.decorKind;
+  return null;
 }
