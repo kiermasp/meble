@@ -1,11 +1,21 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import type { CuttingOrder, CuttingOrderDraft, CuttingPieceDraft } from "@meble/domain";
-import { Repository } from "typeorm";
+import { Repository, type EntityManager } from "typeorm";
 import { toCuttingOrder } from "./cutting-order.mapper";
+import { MaterialRow } from "../materials/material.row";
 import { CuttingOrderRow, CuttingPieceRow, PieceEdgeRow, PieceHoleRow } from "./cutting-order.rows";
 
 const ORDER_RELATIONS = { pieces: { edges: true, holes: true } } as const;
+
+export class UnknownMaterialError extends Error {
+  readonly materialId: string;
+
+  constructor(materialId: string) {
+    super(`Unknown material ${materialId}`);
+    this.materialId = materialId;
+  }
+}
 
 @Injectable()
 export class CuttingOrderStore {
@@ -15,10 +25,23 @@ export class CuttingOrderStore {
   ) {}
 
   async create(draft: CuttingOrderDraft): Promise<CuttingOrder> {
-    const order = this.orders.create({ status: "parked" });
-    order.pieces = draft.pieces.map((piece, index) => this.pieceRow(piece, index));
-    const saved = await this.orders.save(order);
-    return toCuttingOrder(await this.load(saved.id));
+    return this.orders.manager.transaction(async (manager) => {
+      await this.assertMaterials(manager, draft.pieces.map((piece) => piece.materialId));
+      const saved = await manager.save(manager.create(CuttingOrderRow, { status: "parked" }));
+      const pieces = draft.pieces.map((piece, index) => {
+        const row = this.pieceRow(piece, index);
+        row.cuttingOrderId = saved.id;
+        row.order = saved;
+        return row;
+      });
+      if (pieces.length > 0) await manager.save(CuttingPieceRow, pieces);
+      const loaded = await manager.findOne(CuttingOrderRow, {
+        where: { id: saved.id },
+        relations: ORDER_RELATIONS,
+      });
+      if (!loaded) throw new Error(`Cutting order ${saved.id} disappeared after save`);
+      return toCuttingOrder(loaded);
+    });
   }
 
   async list(): Promise<CuttingOrder[]> {
@@ -35,10 +58,12 @@ export class CuttingOrderStore {
     return this.orders.manager.transaction(async (manager) => {
       const existing = await manager.findOne(CuttingOrderRow, { where: { id } });
       if (!existing) return null;
+      await this.assertMaterials(manager, draft.pieces.map((piece) => piece.materialId));
       await manager.delete(CuttingPieceRow, { cuttingOrderId: id });
       const pieces = draft.pieces.map((piece, index) => {
         const row = this.pieceRow(piece, index);
         row.cuttingOrderId = id;
+        row.order = existing;
         return row;
       });
       if (pieces.length > 0) await manager.save(CuttingPieceRow, pieces);
@@ -57,12 +82,6 @@ export class CuttingOrderStore {
     });
   }
 
-  private async load(id: string): Promise<CuttingOrderRow> {
-    const row = await this.orders.findOne({ where: { id }, relations: ORDER_RELATIONS });
-    if (!row) throw new Error(`Cutting order ${id} disappeared after save`);
-    return row;
-  }
-
   private pieceRow(piece: CuttingPieceDraft, sortOrder: number): CuttingPieceRow {
     const row = new CuttingPieceRow();
     row.sortOrder = sortOrder;
@@ -70,7 +89,8 @@ export class CuttingOrderStore {
     row.heightMm = piece.heightMm;
     row.thicknessMm = piece.thicknessMm;
     row.quantity = piece.quantity;
-    row.materialReference = piece.materialReference;
+    row.materialId = piece.materialId;
+    row.material = { id: piece.materialId } as MaterialRow;
     row.grain = piece.grain;
     row.edges = piece.edges.map((edge, index) => {
       const edgeRow = new PieceEdgeRow();
@@ -90,5 +110,17 @@ export class CuttingOrderStore {
       return holeRow;
     });
     return row;
+  }
+
+  private async assertMaterials(manager: EntityManager, materialIds: string[]): Promise<void> {
+    const unique = [...new Set(materialIds)];
+    if (unique.length === 0) return;
+    const found: { id: string }[] = await manager.query(
+      "SELECT id FROM materials WHERE id = ANY($1::uuid[])",
+      [unique],
+    );
+    const known = new Set(found.map((row) => row.id));
+    const missing = unique.find((id) => !known.has(id));
+    if (missing) throw new UnknownMaterialError(missing);
   }
 }

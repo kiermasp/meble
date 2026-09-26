@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { MaterialRow } from "../materials/material.row";
 import { numericColumn } from "./numeric";
 
 @Entity({ name: "cutting_orders" })
@@ -60,8 +61,13 @@ export class CuttingPieceRow {
   @Column({ type: "int" })
   quantity!: number;
 
-  @Column({ name: "material_reference", type: "text" })
-  materialReference!: string;
+  @Index()
+  @Column({ name: "material_id", type: "uuid" })
+  materialId!: string;
+
+  @ManyToOne(() => MaterialRow, { nullable: false, onDelete: "RESTRICT", onUpdate: "NO ACTION" })
+  @JoinColumn({ name: "material_id" })
+  material!: MaterialRow;
 
   @Column({ type: "text" })
   grain!: string;

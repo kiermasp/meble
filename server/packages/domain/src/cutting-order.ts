@@ -37,8 +37,11 @@ export interface CuttingPiece {
   heightMm: number;
   thicknessMm: number;
   quantity: number;
-  /** Catalog code of the board, stored on the draft. */
-  materialReference: string;
+  /**
+   * materials.id of one purchasable board.
+   * That row is unique on (category, externalCode); thickness and structure are columns of the same row.
+   */
+  materialId: string;
   grain: GrainDirection;
   edges: PieceEdge[];
   holes: PieceHole[];
@@ -70,7 +73,7 @@ export interface CuttingPieceDraft {
   heightMm: number;
   thicknessMm: number;
   quantity: number;
-  materialReference: string;
+  materialId: string;
   grain: GrainDirection;
   edges: PieceEdgeDraft[];
   holes: PieceHoleDraft[];

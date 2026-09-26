@@ -9,6 +9,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Max,
   MaxLength,
   Min,
@@ -122,11 +123,9 @@ export class CuttingPieceDto {
   @Max(9999, { message: "Ilość (quantity) nie może przekraczać 9999." })
   quantity!: number;
 
-  /** Kod płyty z lokalnego katalogu. Zapisujemy go na szkicu, bez pobierania ze sklepu. */
-  @IsString({ message: "Odwołanie do płyty (materialReference) musi być tekstem." })
-  @IsNotEmpty({ message: "Odwołanie do płyty (materialReference) jest wymagane." })
-  @MaxLength(120, { message: "Odwołanie do płyty (materialReference) jest za długie." })
-  materialReference!: string;
+  /** Identyfikator wiersza materials. Jedna płyta do kupienia: kategoria i kod sklepu, z grubością i strukturą na tym wierszu. */
+  @IsUUID("4", { message: "Identyfikator płyty (materialId) musi być UUID z katalogu materials." })
+  materialId!: string;
 
   /**
    * Usłojenie: along-length (wzdłuż wysokości), along-width (wzdłuż szerokości) albo none (brak).

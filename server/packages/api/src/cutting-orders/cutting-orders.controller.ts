@@ -12,7 +12,7 @@ import {
 } from "@nestjs/common";
 import { CuttingOrderBodyDto } from "./cutting-order.dto";
 import { presentCuttingOrder, toDraft } from "./cutting-order.presenter";
-import { CuttingOrderStore } from "./cutting-order.store";
+import { CuttingOrderStore, UnknownMaterialError } from "./cutting-order.store";
 
 const MISSING = "Nie ma zaparkowanego rozkroju o tym identyfikatorze.";
 
@@ -27,8 +27,12 @@ export class CuttingOrdersController {
   @Post()
   @HttpCode(201)
   async create(@Body() body: CuttingOrderBodyDto) {
-    const order = await this.orders.create(toDraft(body));
-    return presentCuttingOrder(order);
+    try {
+      const order = await this.orders.create(toDraft(body));
+      return presentCuttingOrder(order);
+    } catch (error) {
+      this.rethrowUnknownMaterial(error);
+    }
   }
 
   @Get()
@@ -46,8 +50,19 @@ export class CuttingOrdersController {
 
   @Patch(":id")
   async update(@Param("id", uuid) id: string, @Body() body: CuttingOrderBodyDto) {
-    const order = await this.orders.update(id, toDraft(body));
-    if (!order) throw new NotFoundException(MISSING);
-    return presentCuttingOrder(order);
+    try {
+      const order = await this.orders.update(id, toDraft(body));
+      if (!order) throw new NotFoundException(MISSING);
+      return presentCuttingOrder(order);
+    } catch (error) {
+      this.rethrowUnknownMaterial(error);
+    }
+  }
+
+  private rethrowUnknownMaterial(error: unknown): never {
+    if (error instanceof UnknownMaterialError) {
+      throw new BadRequestException(`Nie ma płyty o identyfikatorze ${error.materialId}.`);
+    }
+    throw error;
   }
 }

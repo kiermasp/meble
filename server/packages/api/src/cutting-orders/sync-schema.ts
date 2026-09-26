@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
+import { MaterialRow } from "../materials/material.row";
 import { CUTTING_ORDER_ENTITIES } from "./cutting-order.rows";
 
 /**
@@ -11,7 +12,7 @@ async function main(): Promise<void> {
   const dataSource = new DataSource({
     type: "postgres",
     url,
-    entities: [...CUTTING_ORDER_ENTITIES],
+    entities: [MaterialRow, ...CUTTING_ORDER_ENTITIES],
     synchronize: true,
     dropSchema: false,
   });
@@ -22,7 +23,20 @@ async function main(): Promise<void> {
        AND table_name IN ('cutting_orders', 'cutting_pieces', 'piece_edges', 'piece_holes')
      ORDER BY table_name`,
   );
-  console.log(JSON.stringify({ synchronized: true, tables: tables.map((row) => row.table_name) }));
+  const foreignKeys: { table_name: string; definition: string }[] = await dataSource.query(
+    `SELECT conrelid::regclass::text AS table_name, pg_get_constraintdef(oid) AS definition
+     FROM pg_constraint
+     WHERE contype = 'f'
+       AND conrelid::regclass::text IN ('cutting_orders', 'cutting_pieces', 'piece_edges', 'piece_holes')
+     ORDER BY 1, 2`,
+  );
+  console.log(
+    JSON.stringify({
+      synchronized: true,
+      tables: tables.map((row) => row.table_name),
+      foreignKeys,
+    }),
+  );
   await dataSource.destroy();
 }
 

@@ -35,7 +35,7 @@ function toPiece(row: CuttingPieceRow): CuttingPiece {
     heightMm: row.heightMm,
     thicknessMm: row.thicknessMm,
     quantity: row.quantity,
-    materialReference: row.materialReference,
+    materialId: row.materialId,
     grain: row.grain,
     edges: edges.map(toEdge),
     holes: holes.map(toHole),

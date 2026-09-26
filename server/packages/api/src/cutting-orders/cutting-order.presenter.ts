@@ -13,7 +13,7 @@ export function presentCuttingOrder(order: CuttingOrder) {
       heightMm: piece.heightMm,
       thicknessMm: piece.thicknessMm,
       quantity: piece.quantity,
-      materialReference: piece.materialReference,
+      materialId: piece.materialId,
       grain: piece.grain,
       edges: piece.edges.map((edge) => ({
         id: edge.id,
@@ -38,7 +38,7 @@ export function toDraft(body: CuttingOrderBodyDto): CuttingOrderDraft {
     heightMm: piece.heightMm,
     thicknessMm: piece.thicknessMm,
     quantity: piece.quantity,
-    materialReference: piece.materialReference,
+    materialId: piece.materialId,
     grain: piece.grain,
     edges: piece.edges.map((edge) => ({
       side: edge.side,
