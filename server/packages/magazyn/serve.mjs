@@ -42,9 +42,9 @@ createServer(async (request, response) => {
     response.end(request.method === "HEAD" ? undefined : HEALTH);
     return;
   }
-  if (url.pathname === "/materials") {
+  if (url.pathname === "/materials" || url.pathname === "/edgebands") {
     try {
-      const upstream = await fetch(`${api}/materials${url.search}`, { headers: { accept: "application/json" } });
+      const upstream = await fetch(`${api}${url.pathname}${url.search}`, { headers: { accept: "application/json" } });
       const body = Buffer.from(await upstream.arrayBuffer());
       response.writeHead(upstream.status, {
         "content-type": upstream.headers.get("content-type") ?? "application/json; charset=utf-8",

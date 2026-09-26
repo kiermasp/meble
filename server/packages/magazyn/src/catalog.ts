@@ -179,13 +179,15 @@ export function thicknessLabel(mm: number | null): string {
   return `${new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 1 }).format(mm)} mm`;
 }
 
+export function formatMoney(amount: number | null, currency: string | null): string {
+  if (amount == null || !Number.isFinite(amount)) return "—";
+  const formatted = new Intl.NumberFormat("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+  if (currency == null || currency === "PLN") return `${formatted} zł`;
+  return `${formatted} ${currency}`;
+}
+
 export function priceLabel(board: CatalogBoard): string {
-  if (board.unitPriceAmount == null || !Number.isFinite(board.unitPriceAmount)) return "—";
-  const formatted = new Intl.NumberFormat("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
-    board.unitPriceAmount,
-  );
-  if (board.currency == null || board.currency === "PLN") return `${formatted} zł`;
-  return `${formatted} ${board.currency}`;
+  return formatMoney(board.unitPriceAmount, board.currency);
 }
 
 export function isOrderVariant(board: CatalogBoard): boolean {

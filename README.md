@@ -64,4 +64,6 @@ Parser czyta kartę z listingu sklepu i specyfikację ze strony produktu. Test z
 
 Strona React serwowana z `server/packages/magazyn`, nie przez API. API zostaje wyłącznie JSON. Po `docker compose up -d --build` strona jest na http://localhost:3011.
 
-Interfejs korzysta z Material UI. Boczny panel filtruje warianty: Producenci, Grubość, Struktura, Rodzaj dekoru, Format, Wodoodporność, a także Jasność, Typ dekoru, Odcień, Kolor i Status, gdy katalog je ma. Każdy dekor jest blokiem z wierszami Grubość, Struktura, Dostępność i Cena/szt. Nagłówki tych kolumn sortują wiersze, a lista dekorów sortuje się po nazwie, producencie, cenie albo grubości. Warianty produkcyjne są pod osobnym nagłówkiem „Warianty na zamówienie”.
+Interfejs korzysta z Material UI. Strona płyt (http://localhost:3011/) ma boczny panel filtrów: Producenci, Grubość, Struktura, Rodzaj dekoru, Format, Wodoodporność, a także Jasność, Typ dekoru, Odcień, Kolor i Status, gdy katalog je ma. Każdy dekor jest blokiem z wierszami Grubość, Struktura, Dostępność i Cena/szt. Nagłówki tych kolumn sortują wiersze, a lista dekorów sortuje się po nazwie, producencie, cenie albo grubości. Warianty produkcyjne są pod osobnym nagłówkiem „Warianty na zamówienie”.
+
+Strona obrzeży (http://localhost:3011/obrzeza) wyszukuje po kodzie, nazwie i producencie. Tabela pokazuje kod, nazwę, producenta, szerokość, grubość, dostępność i cenę. Nagłówki kolumn sortują wiersze.

@@ -10,7 +10,9 @@ import Typography from "@mui/material/Typography";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Route, Routes, useSearchParams } from "react-router-dom";
+import { EdgebandsPage } from "./components/EdgebandsPage";
+import { WarehouseNav } from "./components/WarehouseNav";
 import {
   isCatalogBoard,
   readViewState,
@@ -28,6 +30,15 @@ import { SortBar } from "./components/SortBar";
 import { drawerWidth } from "./theme";
 
 export function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<BoardsPage />} />
+      <Route path="/obrzeza" element={<EdgebandsPage />} />
+    </Routes>
+  );
+}
+
+function BoardsPage() {
   const theme = useTheme();
   const mobile = useMediaQuery(theme.breakpoints.down("md"));
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -83,7 +94,10 @@ export function App() {
           <Typography variant="h6" component="h1" sx={{ flexGrow: 1 }}>
             Magazyn
           </Typography>
-          <Typography variant="body2">{loading ? "" : `${visibleCount} z ${boards.length}`}</Typography>
+          <WarehouseNav />
+          <Typography variant="body2" sx={{ ml: 2 }}>
+            {loading ? "" : `${visibleCount} z ${boards.length}`}
+          </Typography>
         </Toolbar>
       </AppBar>
       <Drawer
