@@ -1,0 +1,7 @@
+.DS_Store
+command.json
+command.processing.json
+result.json
+*.tmp
+__pycache__/
+*.pyc

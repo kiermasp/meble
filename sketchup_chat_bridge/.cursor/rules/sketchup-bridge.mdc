@@ -1,0 +1,53 @@
+---
+description: Conventions for controlling SketchUp through the local chat bridge
+alwaysApply: true
+---
+
+# SketchUp chat bridge
+
+Control SketchUp only through `sketchup_chat_bridge/` (`command.json` / `send_command.py`). Do not draw with the mouse.
+
+## Units and axes
+
+- Furniture sizes are **millimetres**. Never send metres unless the user did.
+- X = red = width or side-panel thickness
+- Y = green = cabinet depth
+- Z = blue = up / height. Vertical size is `size_mm.z`, never SketchUp `bounds.height` (that is Y).
+
+## Standing cabinet side
+
+A side panel 2000 × 600 × 18 mm standing on the floor:
+
+```json
+{
+  "operation": "create_panel",
+  "orientation": "standing",
+  "thickness_mm": 18,
+  "depth_mm": 600,
+  "height_mm": 2000,
+  "origin_mm": [0, 0, 0]
+}
+```
+
+Shelves use `orientation: "flat"` with `width_mm`, `depth_mm`, `thickness_mm`.
+
+## Board colour and edgebanding
+
+Never number edges 1–4. Use names:
+
+- standing: `front` (−Y), `back` (+Y), `top` (+Z), `bottom` (−Z); board faces ±X (`holes.surface` front=+X, back=−X)
+- flat: `front` (−Y), `back` (+Y), `left` (−X), `right` (+X); board faces ±Z (`holes.surface` front=+Z, back=−Z)
+- thin_y (back panel via `create_box`): `left` / `right` / `top` / `bottom`; board faces ±Y (`holes.surface` front=−Y, back=+Y)
+
+Send millimetre cut size as now. Optional `board` + `edgeband` on `create_panel`:
+
+- `board.decor`, `board.structure`, `board.grain` (`none` | `na_szerokosc` | `na_wysokosc`), optional `hex`
+- `edgeband.glue`: `neutral` | `white`
+- `edgeband.cover`: `long` | `short` (kryjące długie / krótkie)
+- `edgeband.edges.<name>`: `{}` uses `default`; object overrides decor/thickness; omit or `null` = no banding
+
+Glue and cover are stored for CNC; SketchUp only tints faces. The solid is the **finished** size. `cut_mm` / `cut_blank_mm` subtract banding for the saw. Use `cut_list` for a cutting-API payload — identical blanks are merged with `qty`. Holes live on the same panel (`holes[]` on `create_panel` / `create_box` / `add_holes`, never `create_hole`); `qty` also compares the hole list.
+
+## After every create
+
+Inspect and check `bounds_mm.min_mm[2] ≈ 0` (or the requested origin z) and `size_mm` matches the spec. If the solid went below the floor, delete it and fix the command — do not leave it inverted.
