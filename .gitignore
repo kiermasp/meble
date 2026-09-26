@@ -1,6 +1,3 @@
-# Independent clone of kiermasp/sketchup-chat-bridge. Not a submodule.
-/sketchup_chat_bridge/
-
 node_modules/
 dist/
 .env
