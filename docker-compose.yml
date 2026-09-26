@@ -1,0 +1,21 @@
+name: meble
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: meble
+      POSTGRES_PASSWORD: meble
+      POSTGRES_DB: meble
+    ports:
+      - "5432:5432"
+    volumes:
+      - meble_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meble -d meble"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  meble_pg:
