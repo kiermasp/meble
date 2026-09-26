@@ -1,16 +1,16 @@
 # meble
 
-Lokalny katalog płyt z [meble.pl](https://www.meble.pl/rozkroj,plyty-meblowe) oraz klon mostka SketchUp.
+Lokalny katalog płyt z [meble.pl](https://www.meble.pl/rozkroj,plyty-meblowe) oraz mostek SketchUp w tym samym repozytorium.
 
-Local furniture-board catalog in front of meble.pl, plus a SketchUp bridge clone.
+Local furniture-board catalog in front of meble.pl, plus the SketchUp bridge in this same repository.
 
 ## Układ / Layout
 
-- `sketchup_chat_bridge` — zwykły klon [kiermasp/sketchup-chat-bridge](https://github.com/kiermasp/sketchup-chat-bridge) z własną historią gita. To nie jest submodule. Nie wrzucaj tu plików serwera.
+- `sketchup_chat_bridge` — pliki mostka, zwykła część tego repozytorium. Osobne repozytorium [kiermasp/sketchup-chat-bridge](https://github.com/kiermasp/sketchup-chat-bridge) zostaje na GitHubie i nie jest już lokalnym klonem.
 - `server` — monorepo npm: `packages/domain` (typy) i `apps/api` (NestJS).
 - `docker-compose.yml` — Postgres i API. Uruchamiaj z tego katalogu.
 
-The SketchUp checkout keeps its own git history. It is not a submodule. The live plugin in `~/Documents/ChatGPT/sketchup api` is a different copy.
+The live plugin in `~/Documents/ChatGPT/sketchup api` is a different copy.
 
 ## Instalacja / Install
 
